@@ -3,1772 +3,1772 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TAMASHII — The Last Soul Chronicle</title>
+<title>TAMASHII 3D — The Last Soul Chronicle</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Noto+Serif+JP:wght@300;400;700&family=Sawarabi+Mincho&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Noto+Serif+JP:wght@300;400;700&display=swap');
+:root{
+  --sakura:#ffb7c5;--sakura2:#e8556a;--ink:#0d0508;--gold:#c9933a;
+  --gold2:#f0c060;--spirit:#9b59b6;--spirit2:#d7aef5;--teal:#1abc9c;
+  --teal2:#aff0e0;--paper:#fdf3e7;--red:#ff4466;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--ink);color:var(--paper);font-family:'Noto Serif JP',serif;overflow:hidden;width:100vw;height:100vh;}
+#three-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;}
+.screen{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;flex-direction:column;}
+.screen.active{display:flex;}
 
-:root {
-  --sakura: #ffb7c5;
-  --sakura-deep: #e8556a;
-  --ink: #1a0a0f;
-  --ink2: #2d1320;
-  --gold: #c9933a;
-  --gold-light: #f0c060;
-  --spirit: #9b59b6;
-  --spirit-light: #d7aef5;
-  --teal: #1abc9c;
-  --teal-light: #aff0e0;
-  --paper: #fdf3e7;
-  --panel-bg: rgba(255,183,197,0.04);
-  --border: rgba(255,183,197,0.18);
-  --shadow-sakura: rgba(255,100,130,0.3);
-  --white-spirit: rgba(255,255,255,0.92);
+/* INTRO */
+#intro-screen{background:radial-gradient(ellipse at center,rgba(155,89,182,0.18) 0%,rgba(13,5,8,0.97) 70%);text-align:center;padding:20px;}
+.kanji-big{font-size:7rem;color:var(--sakura);filter:drop-shadow(0 0 40px rgba(255,183,197,0.7));animation:kFloat 4s ease-in-out infinite;line-height:1;display:block;}
+@keyframes kFloat{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-18px) scale(1.05);}}
+.title-main{font-family:'Cinzel Decorative',serif;font-size:clamp(2.2rem,5vw,4.5rem);font-weight:900;background:linear-gradient(135deg,var(--sakura),var(--gold2),var(--spirit2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:0.08em;margin:8px 0 4px;}
+.title-sub{font-family:'Cinzel Decorative',serif;font-size:0.75rem;letter-spacing:0.5em;color:var(--sakura);opacity:0.55;text-transform:uppercase;margin-bottom:20px;}
+.story-scroll{max-width:620px;background:rgba(253,243,231,0.04);border:1px solid rgba(201,147,58,0.25);border-radius:6px;padding:28px 30px;margin:0 auto 24px;text-align:left;position:relative;overflow:hidden;}
+.story-scroll::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0.5;}
+.story-scroll p{font-size:0.88rem;line-height:1.9;color:rgba(253,243,231,0.8);}
+.story-scroll p+p{margin-top:12px;}
+.em{color:var(--sakura);font-weight:700;}.gd{color:var(--gold2);font-weight:700;}.rd{color:var(--red);font-weight:700;}.sp{color:var(--spirit2);font-weight:700;}
+
+/* CHAR CREATE */
+#char-screen{background:rgba(13,5,8,0.96);backdrop-filter:blur(10px);overflow-y:auto;align-items:flex-start;padding:30px 16px;}
+#char-screen .inner{max-width:900px;width:100%;margin:0 auto;}
+.section-head{font-family:'Cinzel Decorative',serif;font-size:0.7rem;letter-spacing:0.4em;color:var(--gold2);text-transform:uppercase;margin-bottom:14px;opacity:0.8;}
+.panel{background:rgba(255,183,197,0.03);border:1px solid rgba(201,147,58,0.18);border-radius:6px;padding:20px;margin-bottom:16px;position:relative;}
+.panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(201,147,58,0.4),transparent);}
+input[type=text]{width:100%;background:rgba(253,243,231,0.04);border:1px solid rgba(201,147,58,0.25);border-radius:4px;padding:14px 16px;color:var(--gold2);font-family:'Cinzel Decorative',serif;font-size:0.95rem;letter-spacing:0.1em;outline:none;transition:all 0.3s;margin-bottom:4px;}
+input[type=text]:focus{border-color:var(--gold);box-shadow:0 0 16px rgba(201,147,58,0.2);}
+input::placeholder{color:rgba(201,147,58,0.3);}
+.class-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;}
+.cls-card{border:1px solid rgba(201,147,58,0.18);border-radius:6px;padding:16px 12px;cursor:pointer;text-align:center;transition:all 0.3s;background:rgba(13,5,8,0.6);}
+.cls-card:hover,.cls-card.sel{border-color:var(--sakura);background:rgba(255,183,197,0.07);transform:translateY(-4px);box-shadow:0 8px 24px rgba(255,100,130,0.15);}
+.cls-card.sel::after{content:'CHOSEN';position:absolute;top:6px;right:8px;font-family:'Cinzel Decorative',serif;font-size:0.5rem;color:var(--gold2);}
+.cls-card{position:relative;}
+.cls-icon{font-size:2.6rem;display:block;margin-bottom:8px;}.cls-name{font-family:'Cinzel Decorative',serif;font-size:0.65rem;color:var(--sakura);letter-spacing:0.2em;margin-bottom:4px;}.cls-jp{font-size:1rem;color:var(--gold);opacity:0.4;margin-bottom:6px;}.cls-desc{font-size:0.7rem;color:rgba(253,243,231,0.5);line-height:1.5;}.cls-abil{font-size:0.65rem;color:var(--spirit2);margin-top:6px;font-style:italic;}
+.mode-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;}
+.mode-card{border:1px solid rgba(201,147,58,0.18);border-radius:6px;padding:18px 14px;cursor:pointer;text-align:center;transition:all 0.3s;background:rgba(13,5,8,0.6);}
+.mode-card:hover{transform:translateY(-4px);}
+.mode-card.bond:hover{border-color:var(--sakura);box-shadow:0 8px 24px rgba(255,100,130,0.2);}
+.mode-card.relic:hover{border-color:var(--gold2);box-shadow:0 8px 24px rgba(240,192,96,0.2);}
+.mode-card.spirit:hover{border-color:var(--spirit2);box-shadow:0 8px 24px rgba(155,89,182,0.2);}
+.mode-card.sel{border-color:var(--gold2)!important;background:rgba(201,147,58,0.07);}
+.mode-icon{font-size:2.8rem;display:block;margin-bottom:10px;}.mode-title{font-family:'Cinzel Decorative',serif;font-size:0.75rem;letter-spacing:0.2em;margin-bottom:8px;}
+.bond .mode-title{color:var(--sakura);}.relic .mode-title{color:var(--gold2);}.spirit .mode-title{color:var(--spirit2);}
+.mode-desc{font-size:0.75rem;color:rgba(253,243,231,0.5);line-height:1.5;}
+
+/* BUTTONS */
+.btn{font-family:'Cinzel Decorative',serif;font-size:0.72rem;letter-spacing:0.18em;padding:12px 26px;border:1px solid rgba(255,183,197,0.3);background:transparent;color:var(--sakura);cursor:pointer;transition:all 0.3s;border-radius:3px;margin:5px;position:relative;overflow:hidden;}
+.btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,183,197,0.1),transparent);transition:left 0.35s;}
+.btn:hover::before{left:100%;}
+.btn:hover{border-color:var(--sakura);box-shadow:0 0 18px rgba(255,183,197,0.25);transform:translateY(-2px);}
+.btn-gold{border-color:rgba(201,147,58,0.4);color:var(--gold2);}.btn-gold:hover{border-color:var(--gold2);box-shadow:0 0 18px rgba(240,192,96,0.3);}
+.btn-spirit{border-color:rgba(155,89,182,0.4);color:var(--spirit2);}.btn-spirit:hover{border-color:var(--spirit2);box-shadow:0 0 18px rgba(155,89,182,0.3);}
+.btn-teal{border-color:rgba(26,188,156,0.4);color:var(--teal2);}.btn-teal:hover{border-color:var(--teal2);box-shadow:0 0 18px rgba(26,188,156,0.3);}
+.btn-danger{border-color:rgba(255,68,102,0.4);color:#ff8899;}.btn-danger:hover{border-color:#ff4466;box-shadow:0 0 18px rgba(255,68,102,0.3);}
+.btn-lg{font-size:0.9rem;padding:16px 44px;}
+
+/* ═══════════════════════════════════
+   CINEMATIC DICE ROLL SEQUENCE
+═══════════════════════════════════ */
+#dice-cinema{
+  position:fixed;inset:0;z-index:100;
+  display:none;align-items:center;justify-content:center;
+  flex-direction:column;
+  background:radial-gradient(ellipse at center, rgba(13,5,8,0.0) 0%, rgba(13,5,8,0.0) 100%);
+  pointer-events:none;
+}
+#dice-cinema.active{display:flex;}
+
+/* Dark overlay that fades in */
+.cinema-overlay{
+  position:fixed;inset:0;z-index:99;
+  background:rgba(13,5,8,0.0);
+  transition:background 0.4s ease;
+  pointer-events:none;
+}
+.cinema-overlay.dark{background:rgba(13,5,8,0.88);}
+
+/* Swirling spirit energy ring */
+#spirit-ring{
+  position:absolute;width:300px;height:300px;
+  border-radius:50%;
+  background:transparent;
+  border:2px solid transparent;
+  box-shadow: 0 0 0 0 transparent;
+  animation:none;
+  opacity:0;
+  transition:opacity 0.3s;
+}
+#spirit-ring.active{
+  opacity:1;
+  animation:spiralRing 1.5s ease-in-out infinite;
+  border-color: rgba(155,89,182,0.5);
+  box-shadow:
+    0 0 30px rgba(155,89,182,0.4),
+    0 0 60px rgba(255,183,197,0.2),
+    inset 0 0 30px rgba(155,89,182,0.15);
+}
+@keyframes spiralRing{
+  0%{transform:scale(0.8) rotate(0deg);border-color:rgba(155,89,182,0.3);}
+  50%{transform:scale(1.1) rotate(180deg);border-color:rgba(255,183,197,0.6);box-shadow:0 0 50px rgba(255,183,197,0.4),0 0 100px rgba(155,89,182,0.2),inset 0 0 50px rgba(155,89,182,0.2);}
+  100%{transform:scale(0.8) rotate(360deg);border-color:rgba(155,89,182,0.3);}
 }
 
-* { margin:0; padding:0; box-sizing:border-box; }
-
-body {
-  background: var(--ink);
-  color: var(--paper);
-  font-family: 'Noto Serif JP', serif;
-  overflow-x: hidden;
-  min-height: 100vh;
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='4' fill='%23ffb7c5' opacity='0.8'/%3E%3C/svg%3E") 12 12, auto;
+/* Second outer ring */
+#spirit-ring2{
+  position:absolute;width:400px;height:400px;
+  border-radius:50%;
+  background:transparent;
+  border:1px solid transparent;
+  opacity:0;
+  transition:opacity 0.4s;
+}
+#spirit-ring2.active{
+  opacity:0.5;
+  animation:spiralRing2 2s ease-in-out infinite reverse;
+  border-color:rgba(240,192,96,0.3);
+  box-shadow:0 0 20px rgba(240,192,96,0.2);
+}
+@keyframes spiralRing2{
+  0%,100%{transform:scale(0.9) rotate(0deg);}
+  50%{transform:scale(1.05) rotate(180deg);}
 }
 
-/* ===== BACKGROUND LAYERS ===== */
-.bg-layer {
-  position: fixed; top:0; left:0; width:100%; height:100%;
-  pointer-events: none; z-index:0;
+/* Sakura petals burst during roll */
+.cinema-petal{
+  position:absolute;font-size:1.2rem;
+  animation:cinemaPetalFly linear forwards;
+  pointer-events:none;opacity:0;
 }
-.bg-gradient {
-  background:
-    radial-gradient(ellipse 70% 50% at 15% 15%, rgba(155,89,182,0.12) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 70% at 85% 85%, rgba(232,85,106,0.1) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 50% 50%, rgba(26,188,156,0.04) 0%, transparent 60%),
-    linear-gradient(180deg, #0d0508 0%, #1a0a0f 40%, #120810 100%);
+@keyframes cinemaPetalFly{
+  0%{opacity:0;transform:translate(0,0) rotate(0deg) scale(0);}
+  15%{opacity:1;transform:translate(var(--tx1),var(--ty1)) rotate(90deg) scale(1.2);}
+  85%{opacity:0.4;transform:translate(var(--tx2),var(--ty2)) rotate(360deg) scale(0.8);}
+  100%{opacity:0;transform:translate(var(--tx3),var(--ty3)) rotate(540deg) scale(0);}
 }
 
-/* MOON */
-.moon {
-  position: fixed; top: 60px; right: 80px;
-  width: 120px; height: 120px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #fffde8, #f0d898 60%, #c9933a);
-  box-shadow: 0 0 60px rgba(255,220,100,0.25), 0 0 120px rgba(255,200,80,0.1);
-  z-index: 1; pointer-events:none;
-  animation: moonGlow 8s ease-in-out infinite;
+/* The big cinematic dice */
+#cinema-dice-wrap{
+  position:relative;
+  z-index:101;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
-.moon::after {
-  content:'';
-  position:absolute; top:15px; left:20px;
-  width:20px; height:20px; border-radius:50%;
-  background: rgba(200,160,60,0.4);
-  box-shadow: 30px 10px 0 rgba(200,160,60,0.3), 10px 40px 0 rgba(200,160,60,0.2);
+#cinema-dice{
+  width:140px;height:140px;
+  background:linear-gradient(135deg,rgba(20,8,16,0.95),rgba(40,15,30,0.9));
+  border:3px solid rgba(201,147,58,0.7);
+  border-radius:24px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cinzel Decorative',serif;
+  font-size:4rem;font-weight:900;
+  color:var(--gold2);
+  box-shadow:
+    0 0 40px rgba(201,147,58,0.35),
+    0 0 80px rgba(255,183,197,0.15),
+    inset 0 0 30px rgba(201,147,58,0.1);
+  transition:transform 0.1s;
+  position:relative;
+  overflow:hidden;
 }
-@keyframes moonGlow {
-  0%,100% { box-shadow: 0 0 60px rgba(255,220,100,0.25); }
-  50% { box-shadow: 0 0 80px rgba(255,220,100,0.4), 0 0 160px rgba(255,200,80,0.15); }
+#cinema-dice::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,183,197,0.08) 0%,transparent 50%,rgba(155,89,182,0.08) 100%);
+  pointer-events:none;
 }
+#cinema-dice.tumble{animation:diceTumble 0.06s ease-in-out;}
+@keyframes diceTumble{
+  0%{transform:rotate(-8deg) scale(0.95);}
+  25%{transform:rotate(10deg) scale(1.08);}
+  50%{transform:rotate(-6deg) scale(0.97);}
+  75%{transform:rotate(8deg) scale(1.05);}
+  100%{transform:rotate(0deg) scale(1);}
+}
+#cinema-dice.slam{animation:diceSlam 0.5s cubic-bezier(0.36,0.07,0.19,0.97);}
+@keyframes diceSlam{
+  0%{transform:scale(0.5) translateY(-60px);opacity:0;}
+  40%{transform:scale(1.4) translateY(10px);opacity:1;}
+  65%{transform:scale(0.9) translateY(-5px);}
+  80%{transform:scale(1.1) translateY(2px);}
+  100%{transform:scale(1) translateY(0);}
+}
+
+/* Result number glow */
+#cinema-result-num{
+  font-family:'Cinzel Decorative',serif;
+  font-size:5rem;font-weight:900;
+  color:var(--gold2);
+  text-shadow:0 0 30px rgba(240,192,96,0.8),0 0 60px rgba(240,192,96,0.4);
+  opacity:0;
+  transform:scale(0.5);
+  transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  margin-top:10px;
+}
+#cinema-result-num.show{opacity:1;transform:scale(1);}
+
+/* Cinema label */
+#cinema-label{
+  font-family:'Cinzel Decorative',serif;
+  font-size:0.65rem;letter-spacing:0.4em;
+  color:rgba(255,183,197,0.5);
+  text-transform:uppercase;
+  margin-top:8px;
+  opacity:0;
+  transition:opacity 0.4s;
+}
+#cinema-label.show{opacity:1;}
+
+/* Result reveal text */
+#cinema-event-text{
+  position:absolute;bottom:80px;
+  font-family:'Cinzel Decorative',serif;
+  font-size:1.1rem;letter-spacing:0.2em;
+  text-align:center;
+  max-width:400px;
+  opacity:0;
+  transform:translateY(20px);
+  transition:all 0.6s ease;
+  color:var(--sakura);
+  text-shadow:0 0 20px rgba(255,183,197,0.5);
+}
+#cinema-event-text.show{opacity:1;transform:translateY(0);}
+
+/* Shockwave pulse on result */
+.shockwave{
+  position:absolute;
+  width:140px;height:140px;
+  border-radius:24px;
+  border:3px solid rgba(240,192,96,0.8);
+  animation:shockPulse 0.8s ease-out forwards;
+  pointer-events:none;
+}
+@keyframes shockPulse{
+  0%{transform:scale(1);opacity:1;border-width:4px;}
+  100%{transform:scale(2.5);opacity:0;border-width:1px;}
+}
+.shockwave2{
+  position:absolute;
+  width:140px;height:140px;
+  border-radius:24px;
+  border:2px solid rgba(255,183,197,0.6);
+  animation:shockPulse 0.8s 0.15s ease-out forwards;
+  pointer-events:none;
+}
+
+/* SPIRIT SLASH effect for Kenshi crit */
+.spirit-slash{
+  position:absolute;
+  width:200%;height:8px;
+  background:linear-gradient(90deg,transparent,rgba(255,183,197,0.9),rgba(255,255,255,0.8),rgba(255,183,197,0.9),transparent);
+  animation:slashAcross 0.35s ease-out forwards;
+  pointer-events:none;
+}
+@keyframes slashAcross{
+  0%{transform:translateX(-100%) rotate(-15deg);opacity:1;}
+  100%{transform:translateX(100%) rotate(-15deg);opacity:0;}
+}
+.spirit-slash2{
+  position:absolute;
+  width:200%;height:5px;
+  background:linear-gradient(90deg,transparent,rgba(155,89,182,0.7),rgba(255,255,255,0.5),rgba(155,89,182,0.7),transparent);
+  animation:slashAcross 0.35s 0.08s ease-out forwards;
+  pointer-events:none;
+  top:8px;
+}
+
+/* CRITICAL FLASH */
+.crit-flash{
+  position:fixed;inset:0;z-index:102;
+  background:rgba(255,183,197,0.15);
+  animation:critFlash 0.5s ease-out forwards;
+  pointer-events:none;
+}
+@keyframes critFlash{0%{opacity:1;}100%{opacity:0;}}
+
+/* ROLL LABEL TYPE-REVEAL */
+#cinema-roll-label{
+  position:absolute;top:60px;
+  font-family:'Cinzel Decorative',serif;
+  font-size:0.6rem;letter-spacing:0.5em;
+  color:rgba(255,183,197,0.4);
+  text-transform:uppercase;
+  opacity:0;
+  animation:none;
+}
+#cinema-roll-label.show{animation:fadeLabel 0.4s ease forwards;}
+@keyframes fadeLabel{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+
+/* ═══════════════════════════════════ */
+
+/* HUD */
+#hud{position:fixed;top:0;left:0;right:0;z-index:30;pointer-events:none;display:none;}
+#hud.active{pointer-events:auto;display:block;}
+.hud-top{display:flex;justify-content:space-between;align-items:flex-start;padding:14px 18px;gap:12px;flex-wrap:wrap;}
+.hud-panel{background:rgba(13,5,8,0.82);border:1px solid rgba(201,147,58,0.2);border-radius:6px;padding:10px 14px;backdrop-filter:blur(8px);}
+.hud-name{font-family:'Cinzel Decorative',serif;font-size:0.8rem;color:var(--gold2);letter-spacing:0.1em;}
+.hud-class{font-size:0.75rem;color:rgba(255,183,197,0.5);margin-top:2px;}
+.hud-avatar{font-size:1.6rem;margin-right:8px;vertical-align:middle;}
+.hp-wrap{display:flex;flex-direction:column;gap:4px;min-width:130px;}
+.hp-label{display:flex;justify-content:space-between;font-family:'Cinzel Decorative',serif;font-size:0.55rem;letter-spacing:0.2em;color:rgba(201,147,58,0.5);}
+.hp-track{height:10px;background:rgba(255,255,255,0.07);border-radius:5px;overflow:hidden;position:relative;}
+.hp-fill{height:100%;border-radius:5px;transition:width 0.5s cubic-bezier(.16,1,.3,1);background:linear-gradient(90deg,#ff4466,var(--sakura));}
+.hp-heal-glow{position:absolute;inset:0;background:rgba(26,188,156,0.5);border-radius:5px;opacity:0;transition:opacity 0.3s;pointer-events:none;}
+.hp-track.healing .hp-heal-glow{animation:healFlash 0.6s ease forwards;}
+@keyframes healFlash{0%{opacity:0.8;}100%{opacity:0;}}
+.stat-row{display:flex;gap:16px;}
+.stat-box{text-align:center;}
+.stat-lbl{font-family:'Cinzel Decorative',serif;font-size:0.5rem;letter-spacing:0.15em;color:rgba(201,147,58,0.45);}
+.stat-val{font-family:'Cinzel Decorative',serif;font-size:1rem;color:var(--gold2);}
+.karma-wrap{min-width:110px;}
+.karma-track{height:6px;background:rgba(255,255,255,0.06);border-radius:3px;position:relative;overflow:hidden;margin-top:4px;}
+.karma-light{position:absolute;top:0;left:50%;height:100%;background:linear-gradient(90deg,var(--gold),var(--teal));border-radius:0 3px 3px 0;transition:width 0.5s;}
+.karma-dark{position:absolute;top:0;right:50%;height:100%;background:linear-gradient(90deg,#ff4466,#8b0030);border-radius:3px 0 0 3px;transition:width 0.5s;}
+
+/* BOTTOM HUD */
+#hud-bottom{position:fixed;bottom:0;left:0;right:0;z-index:30;display:none;justify-content:space-between;align-items:flex-end;padding:14px 18px;pointer-events:none;}
+#hud-bottom.active{pointer-events:auto;display:flex;}
+
+/* DICE AREA */
+.dice-area{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.dice-3d{width:80px;height:80px;cursor:pointer;position:relative;pointer-events:auto;transform-style:preserve-3d;transition:transform 0.15s;}
+.dice-3d:hover{transform:scale(1.08) rotateY(15deg) rotateX(-10deg);}
+.dice-face{width:80px;height:80px;background:linear-gradient(135deg,rgba(201,147,58,0.2),rgba(155,89,182,0.15));border:2px solid rgba(201,147,58,0.6);border-radius:14px;display:flex;align-items:center;justify-content:center;font-family:'Cinzel Decorative',serif;font-size:2rem;font-weight:900;color:var(--gold2);box-shadow:0 0 20px rgba(201,147,58,0.2),inset 0 0 20px rgba(201,147,58,0.05);user-select:none;}
+.dice-lbl{font-family:'Cinzel Decorative',serif;font-size:0.55rem;letter-spacing:0.25em;color:rgba(201,147,58,0.4);text-align:center;pointer-events:none;}
+.action-btns{display:flex;flex-direction:column;gap:5px;pointer-events:auto;}
+.action-btns .btn{padding:8px 16px;font-size:0.6rem;}
+.hint-panel{background:rgba(13,5,8,0.88);border:1px solid rgba(155,89,182,0.28);border-radius:6px;padding:10px 14px;max-width:260px;font-size:0.75rem;color:var(--spirit2);line-height:1.6;pointer-events:auto;backdrop-filter:blur(8px);}
+.hint-title{font-family:'Cinzel Decorative',serif;font-size:0.55rem;letter-spacing:0.3em;color:rgba(155,89,182,0.6);margin-bottom:6px;display:block;}
+.hint-next{font-family:'Cinzel Decorative',serif;font-size:0.55rem;letter-spacing:0.2em;color:var(--spirit2);background:none;border:1px solid rgba(155,89,182,0.25);border-radius:2px;padding:4px 10px;cursor:pointer;margin-top:6px;width:100%;transition:all 0.2s;pointer-events:auto;}
+.hint-next:hover{border-color:var(--spirit2);background:rgba(155,89,182,0.1);}
+.life-panel{background:rgba(13,5,8,0.9);border:1px solid rgba(26,188,156,0.3);border-radius:6px;padding:10px 14px;max-width:200px;pointer-events:auto;backdrop-filter:blur(8px);}
+.life-title{font-family:'Cinzel Decorative',serif;font-size:0.55rem;letter-spacing:0.3em;color:rgba(26,188,156,0.6);margin-bottom:8px;display:block;}
+.life-btn{display:flex;align-items:center;gap:8px;font-family:'Cinzel Decorative',serif;font-size:0.6rem;letter-spacing:0.1em;padding:7px 10px;border:1px solid rgba(26,188,156,0.25);border-radius:4px;background:rgba(26,188,156,0.05);color:var(--teal2);cursor:pointer;margin-bottom:5px;width:100%;transition:all 0.25s;text-align:left;}
+.life-btn:hover:not(:disabled){border-color:var(--teal2);background:rgba(26,188,156,0.12);transform:translateX(3px);}
+.life-btn:disabled{opacity:0.3;cursor:not-allowed;}
+.life-btn .lbcost{margin-left:auto;color:var(--gold2);font-size:0.65rem;}
+.obj-panel{background:rgba(13,5,8,0.88);border:1px solid rgba(201,147,58,0.18);border-radius:6px;padding:10px 14px;max-width:180px;pointer-events:auto;backdrop-filter:blur(8px);}
+.obj-title{font-family:'Cinzel Decorative',serif;font-size:0.55rem;letter-spacing:0.3em;color:rgba(201,147,58,0.5);margin-bottom:8px;display:block;}
+.obj-item{font-size:0.72rem;color:rgba(253,243,231,0.5);margin-bottom:5px;display:flex;gap:6px;align-items:flex-start;line-height:1.4;}
+.obj-item.done{color:rgba(26,188,156,0.6);text-decoration:line-through;opacity:0.7;}
+.obj-dot{color:var(--sakura);font-size:0.85rem;min-width:14px;}
+.prog-wrap{margin-top:6px;}
+.prog-bar{height:4px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--spirit),var(--sakura));transition:width 0.5s;}
+.prog-lbl{display:flex;justify-content:space-between;font-family:'Cinzel Decorative',serif;font-size:0.5rem;color:rgba(201,147,58,0.35);margin-top:2px;}
+
+/* LOG */
+#log-feed{position:fixed;left:18px;top:50%;transform:translateY(-50%);z-index:30;max-width:200px;pointer-events:none;}
+.log-item{background:rgba(13,5,8,0.82);border:1px solid rgba(201,147,58,0.15);border-radius:4px;padding:7px 10px;font-size:0.72rem;margin-bottom:5px;backdrop-filter:blur(6px);animation:logIn 0.3s ease,logOut 0.4s ease 3.5s forwards;line-height:1.5;}
+@keyframes logIn{from{opacity:0;transform:translateX(-10px);}to{opacity:1;transform:translateX(0);}}
+@keyframes logOut{to{opacity:0;transform:translateX(-10px);}}
+.li-good{color:var(--teal2);border-color:rgba(26,188,156,0.2);}.li-bad{color:#ff8899;border-color:rgba(255,68,102,0.2);}.li-special{color:var(--gold2);border-color:rgba(201,147,58,0.2);}.li-spirit{color:var(--spirit2);border-color:rgba(155,89,182,0.2);}.li-heal{color:#88ffcc;border-color:rgba(100,255,200,0.25);}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;animation:mFadeIn 0.3s ease;}
+@keyframes mFadeIn{from{opacity:0;}to{opacity:1;}}
+.modal-bg.open{display:flex;}
+.modal-box{background:linear-gradient(135deg,#0d0508,#160a10);border:1px solid rgba(201,147,58,0.3);border-radius:8px;padding:28px;max-width:480px;width:92%;box-shadow:0 0 80px rgba(255,100,130,0.12),0 0 40px rgba(201,147,58,0.08);position:relative;overflow:hidden;}
+.modal-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),var(--sakura),transparent);opacity:0.6;}
+.modal-badge{font-family:'Cinzel Decorative',serif;font-size:0.55rem;letter-spacing:0.4em;color:rgba(201,147,58,0.5);margin-bottom:8px;text-transform:uppercase;}
+.modal-title{font-family:'Cinzel Decorative',serif;font-size:1.05rem;letter-spacing:0.1em;margin-bottom:3px;}
+.modal-jp{font-size:0.9rem;opacity:0.3;margin-bottom:14px;font-family:'Noto Serif JP',serif;}
+.modal-art{font-size:4rem;text-align:center;display:block;margin:8px 0;animation:artFloat 2.5s ease-in-out infinite;}
+@keyframes artFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+.modal-desc{font-size:0.85rem;color:rgba(253,243,231,0.75);line-height:1.85;margin-bottom:14px;}
+.modal-hint-box{background:rgba(155,89,182,0.07);border:1px solid rgba(155,89,182,0.2);border-radius:3px;padding:9px 12px;font-size:0.75rem;color:var(--spirit2);margin-bottom:16px;line-height:1.6;}
+.modal-hint-box::before{content:'⟡ Hint: ';font-weight:700;}
+.modal-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+
+/* WIN / LOSE */
+#win-screen,#lose-screen{background:rgba(13,5,8,0.97);backdrop-filter:blur(10px);overflow-y:auto;padding:30px;text-align:center;}
+.win-badge{font-size:5rem;display:block;animation:wPulse 2s ease-in-out infinite;}
+@keyframes wPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
+.win-title{font-family:'Cinzel Decorative',serif;font-size:clamp(1.4rem,4vw,3rem);color:var(--gold2);filter:drop-shadow(0 0 20px rgba(240,192,96,0.5));margin:14px 0 6px;}
+.score-big{font-family:'Cinzel Decorative',serif;font-size:3.5rem;color:var(--sakura);filter:drop-shadow(0 0 20px rgba(255,183,197,0.5));}
+.epilogue-wrap{max-width:620px;margin:20px auto;background:rgba(253,243,231,0.03);border:1px solid rgba(201,147,58,0.2);border-radius:6px;padding:26px 22px;text-align:left;}
+.epilogue-wrap h3{font-family:'Cinzel Decorative',serif;font-size:0.75rem;letter-spacing:0.3em;color:var(--gold2);margin-bottom:14px;}
+.epilogue-wrap p{font-size:0.86rem;line-height:1.9;color:rgba(253,243,231,0.75);margin-bottom:10px;}
 
 /* PETALS */
-.petal {
-  position: fixed;
-  font-size: 1rem;
-  pointer-events: none;
-  z-index: 2;
-  animation: petalFall linear infinite;
-  opacity: 0;
-}
-@keyframes petalFall {
-  0% { transform: translateY(-30px) rotate(0deg) translateX(0); opacity:0; }
-  10% { opacity: 0.7; }
-  90% { opacity: 0.3; }
-  100% { transform: translateY(105vh) rotate(720deg) translateX(40px); opacity:0; }
-}
+.petal-rain{position:fixed;inset:0;pointer-events:none;z-index:5;}
+.petal{position:absolute;font-size:0.9rem;animation:petalFall linear infinite;opacity:0;}
+@keyframes petalFall{0%{transform:translateY(-20px) rotate(0deg);opacity:0;}8%{opacity:0.7;}90%{opacity:0.25;}100%{transform:translateY(105vh) rotate(720deg);opacity:0;}}
+.burst-petal{position:absolute;animation:bFall linear forwards;}
+@keyframes bFall{0%{opacity:1;transform:translateY(0) rotate(0deg);}100%{opacity:0;transform:translateY(90vh) rotate(540deg);}}
 
-/* TORII SILHOUETTE */
-.torii {
-  position: fixed; bottom: 0; left: 50%;
-  transform: translateX(-50%);
-  width: 300px; height: 200px;
-  z-index: 1; pointer-events:none; opacity:0.08;
-}
+/* NODE TOOLTIP */
+#node-tooltip{position:fixed;z-index:35;background:rgba(13,5,8,0.9);border:1px solid rgba(201,147,58,0.3);border-radius:5px;padding:8px 12px;font-size:0.72rem;color:var(--gold2);pointer-events:none;display:none;font-family:'Cinzel Decorative',serif;letter-spacing:0.1em;backdrop-filter:blur(6px);}
 
-/* MAIN */
-#app {
-  position: relative; z-index: 10;
-  max-width: 1100px; margin: 0 auto;
-  padding: 20px;
-}
+/* HEAL FLASH */
+#heal-flash{position:fixed;inset:0;z-index:45;pointer-events:none;background:radial-gradient(ellipse at center,rgba(26,188,156,0.3),transparent 70%);opacity:0;transition:opacity 0.2s;}
+#heal-flash.show{animation:hFlash 0.7s ease forwards;}
+@keyframes hFlash{0%{opacity:0;}30%{opacity:1;}100%{opacity:0;}}
 
-/* ===== SCREENS ===== */
-.screen { display:none; }
-.screen.active { display:block; animation: fadeUp 0.8s cubic-bezier(.16,1,.3,1); }
-@keyframes fadeUp {
-  from { opacity:0; transform:translateY(30px); }
-  to { opacity:1; transform:translateY(0); }
-}
-
-/* ===== INTRO ===== */
-#intro-screen { text-align: center; padding: 30px 16px; min-height: 100vh; display:none; flex-direction:column; align-items:center; justify-content:center; }
-#intro-screen.active { display:flex; }
-
-.kanji-symbol {
-  font-size: 6rem;
-  color: var(--sakura);
-  filter: drop-shadow(0 0 30px rgba(255,183,197,0.5));
-  animation: kanjiFloat 4s ease-in-out infinite;
-  display: block;
-  line-height: 1;
-  margin-bottom: 10px;
-}
-@keyframes kanjiFloat {
-  0%,100% { transform: translateY(0); filter: drop-shadow(0 0 20px rgba(255,183,197,0.4)); }
-  50% { transform: translateY(-12px); filter: drop-shadow(0 0 40px rgba(255,183,197,0.8)); }
-}
-
-.game-title {
-  font-family: 'Cinzel Decorative', serif;
-  font-size: clamp(2rem, 5vw, 4rem);
-  font-weight: 900;
-  background: linear-gradient(135deg, var(--sakura) 0%, var(--gold-light) 50%, var(--spirit-light) 100%);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: 0.05em;
-  line-height: 1.1;
-}
-
-.game-subtitle {
-  font-family: 'Sawarabi Mincho', serif;
-  font-size: clamp(0.7rem, 2vw, 1rem);
-  letter-spacing: 0.5em;
-  color: var(--sakura);
-  opacity: 0.6;
-  margin: 8px 0 4px;
-  text-transform: uppercase;
-}
-
-.japanese-sub {
-  font-family: 'Sawarabi Mincho', serif;
-  font-size: 1.1rem;
-  color: var(--sakura);
-  opacity: 0.4;
-  letter-spacing: 0.3em;
-}
-
-/* SCROLL TEXT */
-.scroll-container {
-  max-width: 680px;
-  margin: 30px auto;
-  position: relative;
-}
-.scroll-bg {
-  background: linear-gradient(180deg, rgba(253,243,231,0.07) 0%, rgba(253,243,231,0.04) 50%, rgba(253,243,231,0.07) 100%);
-  border: 1px solid rgba(201,147,58,0.3);
-  border-radius: 4px;
-  padding: 36px 32px;
-  position: relative;
-  overflow: hidden;
-}
-.scroll-bg::before, .scroll-bg::after {
-  content: '';
-  position: absolute;
-  left:0; right:0; height:24px;
-  background: linear-gradient(180deg, rgba(201,147,58,0.15), transparent);
-}
-.scroll-bg::before { top:0; }
-.scroll-bg::after { bottom:0; transform: rotate(180deg); }
-
-.scroll-ornament {
-  text-align:center;
-  font-size:1.5rem;
-  color: var(--gold);
-  opacity:0.6;
-  margin-bottom:16px;
-  letter-spacing:0.5em;
-}
-
-.scroll-text {
-  font-family: 'Noto Serif JP', serif;
-  font-size: 0.92rem;
-  line-height: 2;
-  color: rgba(253,243,231,0.85);
-  text-align: left;
-}
-.scroll-text .em { color: var(--sakura); font-weight:700; }
-.scroll-text .gold { color: var(--gold-light); font-weight:700; }
-.scroll-text .spirit { color: var(--spirit-light); font-weight:700; }
-.scroll-text .red { color: #ff6b8a; font-weight:700; }
-
-/* ===== BUTTONS ===== */
-.btn {
-  font-family: 'Cinzel Decorative', serif;
-  font-size: 0.75rem;
-  letter-spacing: 0.15em;
-  padding: 13px 28px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--sakura);
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.35s cubic-bezier(.16,1,.3,1);
-  border-radius: 2px;
-  margin: 6px;
-}
-.btn::before {
-  content:'';
-  position:absolute; top:0; left:-100%; width:100%; height:100%;
-  background: linear-gradient(90deg, transparent, rgba(255,183,197,0.12), transparent);
-  transition: left 0.4s;
-}
-.btn:hover::before { left:100%; }
-.btn:hover {
-  border-color: var(--sakura);
-  box-shadow: 0 0 20px var(--shadow-sakura);
-  transform: translateY(-2px);
-}
-.btn-gold { border-color: rgba(201,147,58,0.5); color: var(--gold-light); }
-.btn-gold:hover { border-color:var(--gold-light); box-shadow:0 0 20px rgba(240,192,96,0.3); }
-.btn-spirit { border-color: rgba(155,89,182,0.5); color: var(--spirit-light); }
-.btn-spirit:hover { border-color:var(--spirit-light); box-shadow:0 0 20px rgba(155,89,182,0.3); }
-.btn-danger { border-color: rgba(255,107,138,0.5); color:#ff6b8a; }
-.btn-danger:hover { border-color:#ff6b8a; box-shadow:0 0 20px rgba(255,107,138,0.3); }
-.btn-teal { border-color: rgba(26,188,156,0.5); color: var(--teal-light); }
-.btn-teal:hover { border-color:var(--teal-light); box-shadow:0 0 20px rgba(26,188,156,0.3); }
-
-/* ===== PANELS ===== */
-.panel {
-  background: var(--panel-bg);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 22px;
-  margin: 14px 0;
-  position:relative;
-  overflow:hidden;
-}
-.panel::before {
-  content:'';
-  position:absolute; top:0; left:0; right:0; height:1px;
-  background: linear-gradient(90deg, transparent, var(--gold), transparent);
-  opacity:0.4;
-}
-.panel h2 {
-  font-family: 'Cinzel Decorative', serif;
-  font-size: 0.8rem;
-  letter-spacing:0.3em;
-  color: var(--gold-light);
-  margin-bottom: 18px;
-  text-transform:uppercase;
-}
-
-/* ===== INPUT ===== */
-input[type="text"] {
-  width:100%;
-  background: rgba(253,243,231,0.05);
-  border: 1px solid rgba(201,147,58,0.3);
-  border-radius: 2px;
-  padding: 14px 18px;
-  color: var(--gold-light);
-  font-family: 'Sawarabi Mincho', serif;
-  font-size: 1.1rem;
-  letter-spacing:0.1em;
-  outline:none;
-  transition: all 0.3s;
-  margin-bottom:16px;
-}
-input[type="text"]:focus {
-  border-color: var(--gold);
-  box-shadow: 0 0 15px rgba(201,147,58,0.2);
-}
-input[type="text"]::placeholder { color:rgba(201,147,58,0.3); }
-
-/* ===== CLASS CARDS ===== */
-.class-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(155px,1fr));
-  gap: 12px;
-}
-.class-card {
-  border: 1px solid rgba(201,147,58,0.2);
-  border-radius: 4px;
-  padding: 18px 14px;
-  cursor:pointer;
-  text-align:center;
-  transition: all 0.3s cubic-bezier(.16,1,.3,1);
-  background: rgba(253,243,231,0.03);
-  position:relative;
-  overflow:hidden;
-}
-.class-card:hover, .class-card.selected {
-  border-color: var(--sakura);
-  background: rgba(255,183,197,0.07);
-  transform: translateY(-4px);
-  box-shadow: 0 8px 30px rgba(255,100,130,0.15);
-}
-.class-card.selected::after {
-  content:'✦ CHOSEN';
-  position:absolute; top:6px; right:6px;
-  font-family:'Cinzel Decorative',serif; font-size:0.5rem;
-  color:var(--gold-light); letter-spacing:0.1em;
-}
-.class-icon { font-size:2.8rem; display:block; margin-bottom:10px; }
-.class-name { font-family:'Cinzel Decorative',serif; font-size:0.65rem; color:var(--sakura); letter-spacing:0.2em; margin-bottom:6px; }
-.class-jp { font-family:'Sawarabi Mincho',serif; font-size:1rem; color:var(--gold); opacity:0.5; margin-bottom:6px; }
-.class-desc { font-size:0.72rem; color:rgba(253,243,231,0.55); line-height:1.5; }
-.class-ability { font-size:0.65rem; color:var(--spirit-light); margin-top:6px; font-style:italic; }
-
-/* ===== MODE CARDS ===== */
-.mode-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; }
-.mode-card {
-  border: 1px solid rgba(201,147,58,0.2);
-  border-radius: 4px;
-  padding: 22px 18px;
-  cursor:pointer;
-  transition: all 0.3s cubic-bezier(.16,1,.3,1);
-  background: rgba(253,243,231,0.02);
-  text-align:center;
-}
-.mode-card:hover { transform:translateY(-5px); }
-.mode-card.bond:hover { border-color:var(--sakura); box-shadow:0 10px 30px rgba(255,100,130,0.2); }
-.mode-card.relic:hover { border-color:var(--gold-light); box-shadow:0 10px 30px rgba(240,192,96,0.2); }
-.mode-card.spirit:hover { border-color:var(--spirit-light); box-shadow:0 10px 30px rgba(155,89,182,0.2); }
-.mode-icon { font-size:3rem; display:block; margin-bottom:12px; }
-.mode-title { font-family:'Cinzel Decorative',serif; font-size:0.8rem; letter-spacing:0.2em; margin-bottom:8px; }
-.bond .mode-title { color:var(--sakura); }
-.relic .mode-title { color:var(--gold-light); }
-.spirit-m .mode-title { color:var(--spirit-light); }
-.mode-desc { font-size:0.78rem; color:rgba(253,243,231,0.5); line-height:1.6; }
-
-/* ===== GAME HEADER ===== */
-.game-header {
-  background: rgba(26,10,15,0.9);
-  border: 1px solid rgba(201,147,58,0.25);
-  border-radius: 4px;
-  padding: 14px 20px;
-  display:flex; justify-content:space-between; align-items:center;
-  flex-wrap:wrap; gap:10px;
-  margin-bottom:14px;
-  position:relative;
-  overflow:hidden;
-}
-.game-header::after {
-  content:'';
-  position:absolute; bottom:0; left:0; right:0; height:1px;
-  background: linear-gradient(90deg, transparent, var(--sakura), transparent);
-  opacity:0.3;
-}
-
-.player-info { display:flex; align-items:center; gap:14px; }
-.player-avatar {
-  width:52px; height:52px; border-radius:50%;
-  border:2px solid var(--gold);
-  display:flex; align-items:center; justify-content:center;
-  font-size:1.6rem;
-  background: radial-gradient(circle, rgba(201,147,58,0.15), rgba(26,10,15,0.9));
-  box-shadow: 0 0 20px rgba(201,147,58,0.25);
-  animation: avatarBreath 4s ease-in-out infinite;
-}
-@keyframes avatarBreath {
-  0%,100% { box-shadow:0 0 15px rgba(201,147,58,0.2); }
-  50% { box-shadow:0 0 35px rgba(201,147,58,0.5), 0 0 60px rgba(255,183,197,0.1); }
-}
-
-.stat-row { display:flex; gap:18px; flex-wrap:wrap; }
-.stat { text-align:center; }
-.stat-label { font-family:'Cinzel Decorative',serif; font-size:0.5rem; letter-spacing:0.2em; color:rgba(201,147,58,0.5); text-transform:uppercase; }
-.stat-value { font-family:'Cinzel Decorative',serif; font-size:1rem; color:var(--gold-light); }
-.hp-group { display:flex; flex-direction:column; gap:4px; }
-.hp-bar { width:110px; height:6px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; }
-.hp-fill { height:100%; background: linear-gradient(90deg,#ff6b8a, var(--sakura)); border-radius:3px; transition: width 0.6s cubic-bezier(.16,1,.3,1); }
-
-/* ===== GAME BOARD ===== */
-.game-board {
-  display:grid;
-  grid-template-columns: 1fr 310px;
-  gap:14px;
-}
-@media(max-width:680px) { .game-board { grid-template-columns:1fr; } }
-
-/* ===== MAP ===== */
-.map-container {
-  background: rgba(13,5,8,0.95);
-  border:1px solid rgba(201,147,58,0.2);
-  border-radius:4px;
-  padding:18px;
-  min-height:380px;
-  position:relative;
-  overflow:hidden;
-}
-.map-container::before {
-  content:'';
-  position:absolute; inset:0;
-  background-image:
-    linear-gradient(rgba(201,147,58,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(201,147,58,0.03) 1px, transparent 1px);
-  background-size:30px 30px;
-}
-.map-title { font-family:'Cinzel Decorative',serif; font-size:0.6rem; letter-spacing:0.35em; color:rgba(201,147,58,0.4); margin-bottom:14px; text-transform:uppercase; }
-
-/* ===== DICE ===== */
-.dice-wrap { text-align:center; margin:14px 0; }
-.dice {
-  width:88px; height:88px;
-  background: linear-gradient(135deg, rgba(201,147,58,0.15), rgba(155,89,182,0.15));
-  border: 2px solid rgba(201,147,58,0.5);
-  border-radius: 12px;
-  display:inline-flex; align-items:center; justify-content:center;
-  font-family:'Cinzel Decorative',serif;
-  font-size:2.2rem; font-weight:900;
-  color: var(--gold-light);
-  cursor:pointer;
-  transition: all 0.3s;
-  box-shadow: 0 0 20px rgba(201,147,58,0.15), inset 0 0 20px rgba(201,147,58,0.05);
-  position:relative;
-}
-.dice:hover { transform:scale(1.1) rotate(6deg); box-shadow:0 0 40px rgba(201,147,58,0.4); }
-.dice.rolling { animation:diceRoll 0.7s cubic-bezier(.36,.07,.19,.97); }
-@keyframes diceRoll {
-  0%{transform:scale(1) rotate(0deg);}
-  20%{transform:scale(1.4) rotate(-200deg);}
-  50%{transform:scale(0.8) rotate(400deg);}
-  80%{transform:scale(1.2) rotate(650deg);}
-  100%{transform:scale(1) rotate(720deg);}
-}
-.dice-label { font-family:'Sawarabi Mincho',serif; font-size:0.65rem; color:rgba(201,147,58,0.4); letter-spacing:0.3em; margin-top:8px; }
-
-/* ===== HINT BOX ===== */
-.hint-box {
-  background: linear-gradient(135deg, rgba(155,89,182,0.08), rgba(26,188,156,0.05));
-  border: 1px solid rgba(155,89,182,0.3);
-  border-radius:4px;
-  padding:12px 16px;
-  font-size:0.8rem;
-  color:rgba(215,174,245,0.85);
-  line-height:1.7;
-  margin-bottom:12px;
-  position:relative;
-}
-.hint-box::before {
-  content:'💡 HINT';
-  font-family:'Cinzel Decorative',serif;
-  font-size:0.55rem;
-  letter-spacing:0.25em;
-  color:var(--spirit-light);
-  display:block;
-  margin-bottom:6px;
-}
-.hint-toggle {
-  font-family:'Cinzel Decorative',serif; font-size:0.55rem;
-  letter-spacing:0.2em; color:var(--spirit-light);
-  background:none; border:1px solid rgba(155,89,182,0.3);
-  border-radius:2px; padding:5px 12px;
-  cursor:pointer; transition:all 0.2s; width:100%; margin-top:8px;
-}
-.hint-toggle:hover { border-color:var(--spirit-light); background:rgba(155,89,182,0.1); }
-
-/* ===== LOG ===== */
-.event-log {
-  background: rgba(0,0,0,0.6);
-  border: 1px solid rgba(201,147,58,0.12);
-  border-radius:4px;
-  padding:14px;
-  height:180px;
-  overflow-y:auto;
-  font-size:0.8rem;
-  line-height:1.75;
-}
-.event-log::-webkit-scrollbar { width:3px; }
-.event-log::-webkit-scrollbar-thumb { background:rgba(201,147,58,0.3); border-radius:2px; }
-.log-entry { margin-bottom:5px; padding-bottom:5px; border-bottom:1px solid rgba(255,255,255,0.04); }
-.log-entry.good { color:var(--teal-light); }
-.log-entry.bad { color:#ff9aaa; }
-.log-entry.neutral { color:rgba(253,243,231,0.5); }
-.log-entry.special { color:var(--gold-light); }
-.log-entry.spirit-log { color:var(--spirit-light); }
-
-/* ===== SIDE PANEL ===== */
-.side-panel { display:flex; flex-direction:column; gap:12px; }
-.side-box {
-  background: rgba(13,5,8,0.9);
-  border:1px solid rgba(201,147,58,0.15);
-  border-radius:4px;
-  padding:16px;
-  position:relative;
-  overflow:hidden;
-}
-.side-box::before {
-  content:'';
-  position:absolute; top:0; left:0; right:0; height:1px;
-  background: linear-gradient(90deg,transparent,rgba(201,147,58,0.4),transparent);
-}
-.side-box h3 {
-  font-family:'Cinzel Decorative',serif;
-  font-size:0.6rem;
-  letter-spacing:0.3em;
-  color:rgba(201,147,58,0.6);
-  text-transform:uppercase;
-  margin-bottom:12px;
-}
-
-/* OBJECTIVES */
-.obj-item {
-  display:flex; align-items:flex-start; gap:8px;
-  margin-bottom:8px; font-size:0.78rem;
-  color:rgba(253,243,231,0.55);
-  line-height:1.5;
-}
-.obj-item.done { color:rgba(26,188,156,0.7); text-decoration:line-through; opacity:0.7; }
-.obj-dot { min-width:14px; color:var(--sakura); font-size:0.9rem; }
-
-/* INVENTORY */
-.inv-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:5px; margin-top:8px; }
-.inv-slot {
-  aspect-ratio:1;
-  background:rgba(0,0,0,0.4);
-  border:1px solid rgba(201,147,58,0.12);
-  border-radius:3px;
-  display:flex; align-items:center; justify-content:center;
-  font-size:1.2rem; cursor:default; transition:all 0.2s;
-  position:relative;
-}
-.inv-slot:hover { border-color:rgba(201,147,58,0.4); }
-.inv-slot[title]:hover::after {
-  content:attr(title);
-  position:absolute; bottom:110%; left:50%; transform:translateX(-50%);
-  background:rgba(13,5,8,0.95); border:1px solid rgba(201,147,58,0.3);
-  padding:4px 8px; font-size:0.6rem;
-  font-family:'Cinzel Decorative',serif;
-  white-space:nowrap; color:var(--gold-light);
-  border-radius:2px; z-index:100;
-}
-
-/* PROGRESS */
-.prog-bar { height:5px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; margin-top:6px; }
-.prog-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--spirit),var(--sakura)); transition:width 0.6s; }
-.prog-labels { display:flex; justify-content:space-between; font-family:'Cinzel Decorative',serif; font-size:0.55rem; color:rgba(201,147,58,0.4); margin-top:3px; }
-
-/* FIELD STATS */
-.field-stat { display:flex; justify-content:space-between; align-items:center; margin-bottom:7px; }
-.field-label { font-family:'Cinzel Decorative',serif; font-size:0.55rem; letter-spacing:0.15em; color:rgba(201,147,58,0.4); }
-.field-value { font-family:'Cinzel Decorative',serif; font-size:0.9rem; }
-
-/* KARMA GAUGE */
-.karma-container { margin-top:8px; }
-.karma-bar-wrap { height:8px; background:rgba(255,255,255,0.06); border-radius:4px; overflow:hidden; position:relative; }
-.karma-fill-light { position:absolute; top:0; left:50%; height:100%; background:linear-gradient(90deg,var(--gold),var(--teal)); border-radius:0 4px 4px 0; transition:width 0.6s; }
-.karma-fill-dark { position:absolute; top:0; right:50%; height:100%; background:linear-gradient(90deg,#ff6b8a,#9b1030); border-radius:4px 0 0 4px; transition:width 0.6s; transform-origin:right; }
-.karma-labels { display:flex; justify-content:space-between; font-size:0.55rem; color:rgba(255,255,255,0.3); margin-top:3px; font-family:'Cinzel Decorative',serif; }
-
-/* ===== MODAL ===== */
-.modal-overlay {
-  position:fixed; inset:0;
-  background:rgba(0,0,0,0.88);
-  z-index:1000;
-  display:flex; align-items:center; justify-content:center;
-  backdrop-filter:blur(6px);
-  animation:fadeUp 0.3s ease;
-}
-.modal {
-  background: linear-gradient(135deg, #0d0508, #160a10);
-  border:1px solid rgba(201,147,58,0.35);
-  border-radius:6px;
-  padding:32px;
-  max-width:520px; width:92%;
-  position:relative;
-  box-shadow: 0 0 80px rgba(255,100,130,0.15), 0 0 40px rgba(201,147,58,0.1);
-  overflow:hidden;
-}
-.modal::before {
-  content:'';
-  position:absolute; top:0; left:0; right:0; height:2px;
-  background: linear-gradient(90deg, transparent, var(--gold), var(--sakura), transparent);
-  opacity:0.7;
-}
-.modal::after {
-  content:'✦ ✦ ✦';
-  position:absolute; bottom:14px; right:16px;
-  font-size:0.6rem; color:rgba(201,147,58,0.3);
-  letter-spacing:0.4em;
-}
-.modal-type-badge {
-  font-family:'Cinzel Decorative',serif;
-  font-size:0.55rem; letter-spacing:0.4em;
-  margin-bottom:10px; opacity:0.7;
-  text-transform:uppercase;
-}
-.modal-title {
-  font-family:'Cinzel Decorative',serif;
-  font-size:1.1rem; letter-spacing:0.1em;
-  margin-bottom:6px;
-}
-.modal-jp { font-family:'Sawarabi Mincho',serif; font-size:1rem; opacity:0.3; margin-bottom:16px; }
-.encounter-art {
-  font-size:4.5rem; text-align:center; display:block;
-  margin:10px 0;
-  animation:artFloat 2.5s ease-in-out infinite;
-}
-@keyframes artFloat { 0%,100%{transform:translateY(0) scale(1);} 50%{transform:translateY(-10px) scale(1.05);} }
-.modal-desc {
-  font-size:0.87rem; color:rgba(253,243,231,0.75);
-  line-height:1.85; margin-bottom:18px;
-}
-.modal-hint {
-  background:rgba(155,89,182,0.08); border:1px solid rgba(155,89,182,0.2);
-  border-radius:3px; padding:10px 14px;
-  font-size:0.75rem; color:var(--spirit-light);
-  margin-bottom:16px; line-height:1.6;
-}
-.modal-hint::before { content:'⟡ Hint: '; font-weight:700; }
-.modal-actions { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
-
-/* ===== WIN SCREEN ===== */
-#win-screen, #gameover-screen { text-align:center; padding:40px 16px; }
-.win-badge {
-  font-size:5rem; display:block;
-  animation:winPulse 2s ease-in-out infinite;
-}
-@keyframes winPulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.1);} }
-.win-title {
-  font-family:'Cinzel Decorative',serif;
-  font-size:clamp(1.5rem,4vw,3rem);
-  color:var(--gold-light);
-  filter:drop-shadow(0 0 20px rgba(240,192,96,0.5));
-  margin:16px 0 8px;
-}
-.score-big {
-  font-family:'Cinzel Decorative',serif;
-  font-size:3.5rem;
-  color:var(--sakura);
-  filter:drop-shadow(0 0 20px rgba(255,183,197,0.5));
-}
-.epilogue-box {
-  max-width:640px; margin:24px auto;
-  background:rgba(253,243,231,0.04); border:1px solid rgba(201,147,58,0.25);
-  border-radius:4px; padding:28px 24px;
-  text-align:left;
-  font-size:0.88rem; line-height:1.9;
-  color:rgba(253,243,231,0.75);
-}
-.epilogue-box h3 {
-  font-family:'Cinzel Decorative',serif;
-  font-size:0.8rem; letter-spacing:0.3em;
-  color:var(--gold-light); margin-bottom:16px;
-}
-
-/* ===== PETALS CONFETTI ===== */
-.petal-burst { position:fixed; inset:0; pointer-events:none; z-index:999; }
-.burst-petal {
-  position:absolute;
-  animation:burstFall linear forwards;
-}
-@keyframes burstFall {
-  0%{transform:translateY(-20px) rotate(0deg);opacity:1;}
-  100%{transform:translateY(105vh) rotate(540deg);opacity:0;}
-}
-
-/* CHERRY BLOSSOM tree */
-.sakura-tree {
-  position:fixed; bottom:0; left:20px;
-  width:180px; height:300px;
-  z-index:1; pointer-events:none; opacity:0.12;
-}
-
-/* ===== TWIST BANNER ===== */
-.fate-banner {
-  background:linear-gradient(90deg,rgba(155,89,182,0.15),rgba(255,107,138,0.1));
-  border:1px solid rgba(155,89,182,0.4);
-  border-radius:3px; padding:12px 16px;
-  font-family:'Cinzel Decorative',serif;
-  font-size:0.7rem; letter-spacing:0.15em;
-  color:var(--spirit-light); text-align:center;
-  margin:10px 0;
-  animation:fatePulse 1.5s ease-in-out 3;
-}
-@keyframes fatePulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
-
-/* SCROLL BAR */
-::-webkit-scrollbar{width:5px;}
-::-webkit-scrollbar-track{background:var(--ink);}
-::-webkit-scrollbar-thumb{background:rgba(201,147,58,0.25);border-radius:3px;}
+/* Scroll in char screen */
+#char-screen::-webkit-scrollbar{width:4px;}
+#char-screen::-webkit-scrollbar-thumb{background:rgba(201,147,58,0.2);border-radius:2px;}
 </style>
 </head>
 <body>
 
-<!-- BACKGROUND LAYERS -->
-<div class="bg-layer bg-gradient"></div>
-<div class="moon"></div>
+<!-- HEAL FLASH -->
+<div id="heal-flash"></div>
+<!-- TOOLTIP -->
+<div id="node-tooltip"></div>
+<!-- THREE.JS CANVAS -->
+<canvas id="three-canvas"></canvas>
+<!-- PETAL RAIN -->
+<div class="petal-rain" id="petal-layer"></div>
 
-<!-- SAKURA TREE SVG -->
-<svg class="sakura-tree" viewBox="0 0 180 300" xmlns="http://www.w3.org/2000/svg">
-  <line x1="90" y1="300" x2="90" y2="140" stroke="#8B4513" stroke-width="12" stroke-linecap="round"/>
-  <line x1="90" y1="200" x2="50" y2="150" stroke="#8B4513" stroke-width="7" stroke-linecap="round"/>
-  <line x1="90" y1="180" x2="130" y2="140" stroke="#8B4513" stroke-width="7" stroke-linecap="round"/>
-  <line x1="90" y1="160" x2="60" y2="120" stroke="#8B4513" stroke-width="5" stroke-linecap="round"/>
-  <circle cx="90" cy="110" r="55" fill="#ffb7c5" opacity="0.6"/>
-  <circle cx="50" cy="130" r="35" fill="#e8556a" opacity="0.5"/>
-  <circle cx="130" cy="125" r="38" fill="#ffb7c5" opacity="0.55"/>
-  <circle cx="70" cy="90" r="30" fill="#e8a0b0" opacity="0.5"/>
-  <circle cx="110" cy="95" r="28" fill="#ffb7c5" opacity="0.45"/>
-</svg>
-
-<div id="app">
-
-<!-- ============================================================ -->
-<!-- INTRO SCREEN -->
-<!-- ============================================================ -->
-<div id="intro-screen" class="screen active">
-  <span class="kanji-symbol">魂</span>
-  <div class="game-title">TAMASHII</div>
-  <div class="game-subtitle">The Last Soul Chronicle</div>
-  <div class="japanese-sub">魂の最後の年代記</div>
-
-  <div class="scroll-container">
-    <div class="scroll-bg">
-      <div class="scroll-ornament">— ✦ —</div>
-      <div class="scroll-text">
-        <p>In the age when the spirit realm and the mortal world still breathed as one, there existed a village named <span class="em">Hanenoi</span> — meaning "the place where feathers never fall." Its people lived in laughter, in prayer, in the humble warmth of paper lanterns that floated each autumn into the sky.</p>
-        <br>
-        <p>They believed those lanterns carried their prayers to the <span class="gold">Spirit Goddess, Yūrei-no-Hana</span> — <em>the Flower of the Dead</em>. She was said to tend the great <span class="em">Soul Tree</span> at the center of existence, a divine sakura whose petals kept the boundary between life and death in perfect balance.</p>
-        <br>
-        <p>Then came <span class="red">the Night of Fallen Petals.</span></p>
-        <br>
-        <p>Without warning, the Soul Tree began to wither. Its petals — each one a human soul tethered to the living world — rained down like snow into the abyss. People fell into deep, unbreakable sleep. Children stopped laughing. Elders stopped breathing. The lanterns no longer lit.</p>
-        <br>
-        <p>The Spirit Goddess herself has been <span class="red">imprisoned</span> inside a corrupted Oni called <span class="spirit">Mugen-Oni</span> — the Endless Demon — who seeks to devour every soul that remains so that he alone becomes immortal. Without her, the Soul Tree cannot bloom again. Without the tree, <span class="red">all souls — living and dead — will fade into eternal nothingness.</span></p>
-        <br>
-        <p>You are the last <span class="gold">Tamashii-Keeper</span> — the one soul the Goddess marked before she was taken. Your ancestors whispered your name into the wind. The dice of fate have been cast. <span class="em">Roll them true, and perhaps she can still be saved.</span></p>
-        <br>
-        <p style="text-align:center;opacity:0.5;font-style:italic;">You have until the last petal falls.</p>
-      </div>
-      <div class="scroll-ornament" style="margin-top:16px;">— ✦ —</div>
-    </div>
+<!-- ═══════════════════════════════════════════
+     CINEMATIC DICE ROLL OVERLAY
+═══════════════════════════════════════════ -->
+<div class="cinema-overlay" id="cinema-overlay"></div>
+<div id="dice-cinema">
+  <div id="spirit-ring2"></div>
+  <div id="spirit-ring"></div>
+  <div id="cinema-roll-label">⟡ The Dice of Fate ⟡</div>
+  <div id="cinema-dice-wrap">
+    <div id="cinema-dice">🎲</div>
   </div>
+  <div id="cinema-result-num"></div>
+  <div id="cinema-label">SOUL POINTS AWARDED</div>
+  <div id="cinema-event-text"></div>
+</div>
 
-  <button class="btn btn-gold" onclick="showScreen('character-screen')" style="font-size:0.9rem;padding:16px 50px;margin-top:8px;">
-    ✦ BEGIN YOUR CHRONICLE ✦
-  </button>
-  <div style="margin-top:12px;font-family:'Sawarabi Mincho',serif;font-size:0.8rem;color:rgba(201,147,58,0.35);letter-spacing:0.2em;">
-    始めましょう — Let us begin
+<!-- ════════════════════════════════════
+     INTRO SCREEN
+════════════════════════════════════ -->
+<div class="screen active" id="intro-screen">
+  <span class="kanji-big">魂</span>
+  <div class="title-main">TAMASHII 3D</div>
+  <div class="title-sub">The Last Soul Chronicle · Three-Dimensional Edition</div>
+  <div class="story-scroll">
+    <p>In the age when the spirit realm and the mortal world breathed as one, a village named <span class="em">Hanenoi</span> floated paper lanterns each autumn into the sky — prayers to the <span class="gd">Spirit Goddess Yūrei-no-Hana</span>, keeper of the ancient <span class="em">Soul Tree</span> whose blossoms held the boundary between life and death in perfect balance.</p>
+    <p>Then came <span class="rd">the Night of Fallen Petals.</span> The tree withered. Children stopped laughing. Elders stopped breathing. The Goddess herself was imprisoned inside a corrupted demon — <span class="sp">Mugen-Oni, the Endless One</span> — who confused devotion with possession and turned it into a cage.</p>
+    <p>You are the last <span class="gd">Tamashii-Keeper</span>. The dice of fate are before you. The 3D spirit realm stretches in every direction. <span class="em">Roll true, and perhaps she can still be saved.</span></p>
+  </div>
+  <button class="btn btn-gold btn-lg" onclick="showScreen('char-screen')">✦ BEGIN YOUR CHRONICLE ✦</button>
+  <div style="margin-top:10px;font-size:0.75rem;color:rgba(201,147,58,0.3);letter-spacing:0.3em;">始めましょう</div>
+</div>
+
+<!-- ════════════════════════════════════
+     CHARACTER SCREEN
+════════════════════════════════════ -->
+<div class="screen" id="char-screen">
+  <div class="inner">
+    <div style="text-align:center;margin-bottom:20px;padding-top:10px;">
+      <div style="font-family:'Cinzel Decorative',serif;font-size:clamp(1.2rem,3vw,2rem);color:var(--gold2);">Choose Your Path</div>
+      <div style="font-size:0.85rem;color:rgba(255,183,197,0.4);margin-top:4px;">キャラクター作成</div>
+    </div>
+    <div class="panel">
+      <div class="section-head">✦ Your Spirit Name</div>
+      <input type="text" id="nameInput" placeholder="Enter your name..." maxlength="18"/>
+      <div style="font-size:0.72rem;color:rgba(201,147,58,0.35);font-style:italic;">This name will be carved into the Soul Tree forever.</div>
+    </div>
+    <div class="panel">
+      <div class="section-head">✦ Spirit Class</div>
+      <div class="class-grid">
+        <div class="cls-card" onclick="pickClass('kenshi')" id="cls-kenshi">
+          <span class="cls-icon">⚔️</span><div class="cls-name">Kenshi</div><div class="cls-jp">剣士</div>
+          <div class="cls-desc">The Way of the Sword. Strong against Oni. Critical strike on rolls of 5-6.</div>
+          <div class="cls-abil">★ Crits deal double damage</div>
+        </div>
+        <div class="cls-card" onclick="pickClass('miko')" id="cls-miko">
+          <span class="cls-icon">⛩️</span><div class="cls-name">Miko</div><div class="cls-jp">巫女</div>
+          <div class="cls-desc">Shrine Maiden. Can purify cursed tiles. Heals more from shrines.</div>
+          <div class="cls-abil">★ Purify 3× per game</div>
+        </div>
+        <div class="cls-card" onclick="pickClass('kitsune')" id="cls-kitsune">
+          <span class="cls-icon">🦊</span><div class="cls-name">Kitsune</div><div class="cls-jp">狐</div>
+          <div class="cls-desc">Nine-tailed trickster. Re-roll twice. Unpredictable and cunning.</div>
+          <div class="cls-abil">★ Re-roll dice 2× per game</div>
+        </div>
+        <div class="cls-card" onclick="pickClass('ryuujin')" id="cls-ryuujin">
+          <span class="cls-icon">🐉</span><div class="cls-name">Ryuujin</div><div class="cls-jp">龍神</div>
+          <div class="cls-desc">Dragon descendant. Massive HP, half trap damage, regen on low rolls.</div>
+          <div class="cls-abil">★ Dragon Scales: half trap dmg</div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="section-head">✦ Sacred Quest</div>
+      <div class="mode-grid">
+        <div class="mode-card bond" onclick="pickMode('bond')" id="mode-bond">
+          <span class="mode-icon">🌸</span><div class="mode-title">Bond of Souls</div>
+          <div class="mode-desc">Find 3 spirit fragments of the Goddess within 20 turns. Emotional. Heartbreaking.</div>
+        </div>
+        <div class="mode-card relic" onclick="pickMode('relic')" id="mode-relic">
+          <span class="mode-icon">⚱️</span><div class="mode-title">Relic Hunt</div>
+          <div class="mode-desc">Collect 5 sacred relics hidden in chests across the realm. Greed may corrupt you.</div>
+        </div>
+        <div class="mode-card spirit" onclick="pickMode('spirit')" id="mode-spirit">
+          <span class="mode-icon">🕯️</span><div class="mode-title">Spirit Vigil</div>
+          <div class="mode-desc">Hold the light for 25 turns. Every turn you survive saves another lost soul.</div>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;padding-bottom:20px;">
+      <button class="btn btn-gold btn-lg" onclick="startGame()">✦ ENTER THE SPIRIT REALM ✦</button>
+    </div>
   </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- CHARACTER SCREEN -->
-<!-- ============================================================ -->
-<div id="character-screen" class="screen">
-  <div style="text-align:center;padding:20px 0 10px;">
-    <div style="font-family:'Cinzel Decorative',serif;font-size:0.7rem;letter-spacing:0.4em;color:rgba(201,147,58,0.5);">CHARACTER CREATION</div>
-    <div style="font-family:'Sawarabi Mincho',serif;font-size:1.4rem;color:var(--sakura);margin-top:4px;opacity:0.5;">キャラクター作成</div>
-  </div>
-
-  <div class="panel">
-    <h2>✦ Your Name in the Spirit Realm</h2>
-    <input type="text" id="player-name-input" placeholder="Enter your spirit name..." maxlength="20"/>
-    <div style="font-size:0.75rem;color:rgba(201,147,58,0.4);font-style:italic;margin-top:-10px;margin-bottom:4px;">
-      This name will be woven into the Soul Tree's bark forever.
+<!-- HUD -->
+<div id="hud">
+  <div class="hud-top">
+    <div class="hud-panel" style="display:flex;align-items:center;gap:10px;">
+      <span class="hud-avatar" id="hud-avatar">?</span>
+      <div><div class="hud-name" id="hud-name">—</div><div class="hud-class" id="hud-class">—</div></div>
     </div>
-  </div>
-
-  <div class="panel">
-    <h2>✦ Choose Your Spirit Path</h2>
-    <div class="class-grid">
-      <div class="class-card" onclick="selectClass('kenshi')" id="class-kenshi">
-        <span class="class-icon">⚔️</span>
-        <div class="class-name">Kenshi</div>
-        <div class="class-jp">剣士</div>
-        <div class="class-desc">The Way of the Sword. Fierce and direct. High combat power, strong against Oni.</div>
-        <div class="class-ability">★ Can deal critical strikes (roll 5-6 = double damage)</div>
-      </div>
-      <div class="class-card" onclick="selectClass('miko')" id="class-miko">
-        <span class="class-icon">⛩️</span>
-        <div class="class-name">Miko</div>
-        <div class="class-jp">巫女</div>
-        <div class="class-desc">Shrine Maiden. Speaks with spirits. Can purify cursed tiles and heal wounds.</div>
-        <div class="class-ability">★ Purify (skip curse/trap) once per 5 turns</div>
-      </div>
-      <div class="class-card" onclick="selectClass('kitsune')" id="class-kitsune">
-        <span class="class-icon">🦊</span>
-        <div class="class-name">Kitsune</div>
-        <div class="class-jp">狐</div>
-        <div class="class-desc">Nine-tailed trickster spirit. Can re-roll twice. Unpredictable, cunning, alive.</div>
-        <div class="class-ability">★ Re-roll the dice (2× per game)</div>
-      </div>
-      <div class="class-card" onclick="selectClass('ryuujin')" id="class-ryuujin">
-        <span class="class-icon">🐉</span>
-        <div class="class-name">Ryuujin</div>
-        <div class="class-jp">龍神</div>
-        <div class="class-desc">Dragon descendant. Immense vitality. Slow but nearly unstoppable force of nature.</div>
-        <div class="class-ability">★ Dragon Scales: half damage from all traps</div>
+    <div class="hud-panel hp-wrap">
+      <div class="hp-label"><span>LIFE FORCE</span><span id="hp-num">100</span></div>
+      <div class="hp-track" id="hp-track">
+        <div class="hp-fill" id="hp-fill" style="width:100%"></div>
+        <div class="hp-heal-glow"></div>
       </div>
     </div>
-  </div>
-
-  <div class="panel">
-    <h2>✦ Choose Your Sacred Quest</h2>
-    <div class="mode-grid">
-      <div class="mode-card bond" onclick="selectMode('bond')">
-        <span class="mode-icon">🌸</span>
-        <div class="mode-title">Bond of Souls</div>
-        <div class="mode-desc">Three spirit fragments of the Goddess are scattered. Reunite them before the 20th turn to free her. Emotional. Heartbreaking. Worth it.</div>
-      </div>
-      <div class="mode-card relic" onclick="selectMode('relic')">
-        <span class="mode-icon">⚱️</span>
-        <div class="mode-title">Relic Hunt</div>
-        <div class="mode-desc">Gather 5 sacred relics hidden inside chests across the spirit realm. Each holds a memory of the Goddess. Greed may corrupt you.</div>
-      </div>
-      <div class="mode-card spirit-m" onclick="selectMode('spirit')">
-        <span class="mode-icon">🕯️</span>
-        <div class="mode-title">Spirit Vigil</div>
-        <div class="mode-desc">Hold the light for 25 turns. As long as you breathe, the Soul Tree lives. Every turn you survive, another soul is saved from the void.</div>
+    <div class="hud-panel stat-row">
+      <div class="stat-box"><div class="stat-lbl">SOUL PTS</div><div class="stat-val" id="hud-score">0</div></div>
+      <div class="stat-box"><div class="stat-lbl">TURN</div><div class="stat-val" id="hud-turn">1/20</div></div>
+      <div class="stat-box"><div class="stat-lbl">ONI</div><div class="stat-val" id="hud-kills" style="color:#ff8899;">0</div></div>
+    </div>
+    <div class="hud-panel karma-wrap">
+      <div class="stat-lbl" style="margin-bottom:2px;">KARMA — <span id="karma-label" style="color:var(--gold2);">Neutral</span></div>
+      <div class="karma-track">
+        <div class="karma-light" id="karma-l" style="width:0%"></div>
+        <div class="karma-dark" id="karma-d" style="width:0%"></div>
       </div>
     </div>
-  </div>
-
-  <div style="text-align:center;margin-top:8px;">
-    <button class="btn btn-gold" onclick="startGame()">✦ ENTER THE SPIRIT REALM ✦</button>
   </div>
 </div>
 
-<!-- ============================================================ -->
-<!-- GAME SCREEN -->
-<!-- ============================================================ -->
-<div id="game-screen" class="screen">
-
-  <div class="game-header">
-    <div class="player-info">
-      <div class="player-avatar" id="player-avatar">?</div>
-      <div>
-        <div style="font-family:'Cinzel Decorative',serif;font-size:1rem;color:var(--gold-light);" id="display-name">—</div>
-        <div style="font-family:'Sawarabi Mincho',serif;font-size:0.8rem;color:rgba(255,183,197,0.5);" id="display-class">—</div>
-      </div>
-    </div>
-    <div class="stat-row">
-      <div class="stat"><div class="stat-label">Soul Pts</div><div class="stat-value" id="score-disp">0</div></div>
-      <div class="stat"><div class="stat-label">Turn</div><div class="stat-value" id="turn-disp">1/20</div></div>
-      <div class="stat"><div class="stat-label">Karma</div><div class="stat-value" id="karma-disp" style="font-size:0.85rem;">Neutral</div></div>
-    </div>
-    <div class="hp-group">
-      <div class="stat-label">Life Force <span id="hp-num" style="color:var(--sakura);">100</span></div>
-      <div class="hp-bar"><div class="hp-fill" id="hp-fill" style="width:100%"></div></div>
+<!-- BOTTOM HUD -->
+<div id="hud-bottom">
+  <div>
+    <div class="life-panel" id="life-panel">
+      <span class="life-title">✦ LIFE RECOVERY</span>
+      <button class="life-btn" id="lb-prayer" onclick="recoverLife('prayer')">🙏 Pray at Shrine <span class="lbcost">+25 HP</span></button>
+      <button class="life-btn" id="lb-herb" onclick="recoverLife('herb')">🌿 Spirit Herb <span class="lbcost">+20 HP</span></button>
+      <button class="life-btn" id="lb-dragon" onclick="recoverLife('dragon')">🐉 Dragon Breath <span class="lbcost">+35 HP</span></button>
+      <button class="life-btn" id="lb-meditate" onclick="recoverLife('meditate')">🧘 Meditate <span class="lbcost">+15 HP/3t</span></button>
+      <button class="life-btn" id="lb-offer" onclick="recoverLife('offer')">🕯️ Soul Offering <span class="lbcost">+50 HP</span></button>
     </div>
   </div>
-
-  <div class="game-board">
-    <!-- LEFT -->
-    <div>
-      <div class="map-container">
-        <div class="map-title">✦ THE SPIRIT REALM — CURSED TERRITORY ✦</div>
-        <svg id="map-svg" viewBox="0 0 460 320" style="width:100%;height:310px;"></svg>
-      </div>
-
-      <div class="panel" style="margin-top:14px;">
-        <div class="hint-box" id="hint-display">
-          Roll the dice to traverse the spirit realm. Each node holds a different fate — some sacred, some cursed. Read the hints before you choose your action.
-        </div>
-        <button class="hint-toggle" onclick="cycleHint()">⟡ Next Hint ⟡</button>
-
-        <div class="dice-wrap" style="margin-top:14px;">
-          <div class="dice" id="dice" onclick="rollDice()">🎲</div>
-          <div class="dice-label">— Tap the dice — Fate is cast by your hand —</div>
-          <div id="reroll-zone" style="margin-top:8px;text-align:center;"></div>
-        </div>
-
-        <div style="font-family:'Cinzel Decorative',serif;font-size:0.55rem;letter-spacing:0.35em;color:rgba(201,147,58,0.4);text-transform:uppercase;margin:10px 0 6px;">Chronicles</div>
-        <div class="event-log" id="event-log">
-          <div class="log-entry neutral">[ The spirit realm stirs... Your journey begins at the Sacred Gate. ]</div>
-        </div>
-      </div>
+  <div class="dice-area">
+    <div class="dice-3d" id="dice" onclick="rollDice()">
+      <div class="dice-face" id="dice-face">🎲</div>
     </div>
-
-    <!-- RIGHT -->
-    <div class="side-panel">
-
-      <!-- OBJECTIVES -->
-      <div class="side-box">
-        <h3>Sacred Objectives</h3>
-        <div id="objectives-list"></div>
+    <div class="dice-lbl">— Tap to Roll —</div>
+    <div class="action-btns" id="action-btns"></div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
+    <div class="obj-panel">
+      <span class="obj-title">✦ OBJECTIVES</span>
+      <div id="obj-list"></div>
+      <div class="prog-wrap">
         <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
-        <div class="prog-labels"><span>FATE</span><span id="prog-pct">0%</span></div>
+        <div class="prog-lbl"><span>FATE</span><span id="prog-pct">0%</span></div>
       </div>
-
-      <!-- KARMA -->
-      <div class="side-box">
-        <h3>Karma Balance</h3>
-        <div class="karma-container">
-          <div class="karma-bar-wrap">
-            <div class="karma-fill-light" id="karma-light" style="width:0%"></div>
-            <div class="karma-fill-dark" id="karma-dark" style="width:0%"></div>
-          </div>
-          <div class="karma-labels"><span>☯ LIGHT</span><span>DARK ⛩</span></div>
-        </div>
-        <div style="font-size:0.72rem;color:rgba(253,243,231,0.4);margin-top:8px;line-height:1.6;" id="karma-desc">
-          Your choices between mercy and force shape your karma, and your karma shapes the Soul Tree's fate.
-        </div>
-      </div>
-
-      <!-- INVENTORY -->
-      <div class="side-box">
-        <h3>Sacred Relics</h3>
-        <div class="inv-grid" id="inventory-grid"></div>
-      </div>
-
-      <!-- STATS -->
-      <div class="side-box">
-        <h3>Field Records</h3>
-        <div class="field-stat"><span class="field-label">ONI VANQUISHED</span><span class="field-value" id="stat-kills" style="color:#ff9aaa;">0</span></div>
-        <div class="field-stat"><span class="field-label">SHRINES BLESSED</span><span class="field-value" id="stat-shrines" style="color:var(--teal-light);">0</span></div>
-        <div class="field-stat"><span class="field-label">PORTALS CROSSED</span><span class="field-value" id="stat-portals" style="color:var(--spirit-light);">0</span></div>
-        <div class="field-stat"><span class="field-label">SOULS SAVED</span><span class="field-value" id="stat-souls" style="color:var(--gold-light);">0</span></div>
-        <div class="field-stat"><span class="field-label">RE-ROLLS LEFT</span><span class="field-value" id="stat-rerolls" style="color:var(--sakura);">0</span></div>
-      </div>
+    </div>
+    <div class="hint-panel">
+      <span class="hint-title">💡 SPIRIT HINT</span>
+      <div id="hint-text">Roll the dice to move through the spirit realm. Land on glowing nodes to trigger events.</div>
+      <button class="hint-next" onclick="nextHint()">⟡ Next Hint ⟡</button>
     </div>
   </div>
 </div>
 
-<!-- ============================================================ -->
+<!-- LOG FEED -->
+<div id="log-feed"></div>
+
+<!-- ENCOUNTER MODAL -->
+<div class="modal-bg" id="modal">
+  <div class="modal-box">
+    <div class="modal-badge" id="m-badge">— EVENT —</div>
+    <div class="modal-title" id="m-title">ENCOUNTER</div>
+    <div class="modal-jp" id="m-jp">出会い</div>
+    <span class="modal-art" id="m-art">?</span>
+    <div class="modal-desc" id="m-desc"></div>
+    <div class="modal-hint-box" id="m-hint"></div>
+    <div class="modal-actions" id="m-acts"></div>
+  </div>
+</div>
+
 <!-- WIN SCREEN -->
-<!-- ============================================================ -->
-<div id="win-screen" class="screen">
-  <div class="petal-burst" id="petal-burst"></div>
-  <br>
+<div class="screen" id="win-screen">
+  <div id="win-burst" style="position:fixed;inset:0;pointer-events:none;z-index:55;"></div>
   <span class="win-badge" id="win-badge">🌸</span>
   <div class="win-title" id="win-title">THE GODDESS IS FREE</div>
-  <div style="font-family:'Sawarabi Mincho',serif;font-size:1.2rem;color:rgba(255,183,197,0.4);margin:4px 0 20px;">魂は解放された</div>
-
-  <div class="score-big" id="final-score">0</div>
-  <div style="font-family:'Cinzel Decorative',serif;font-size:0.65rem;letter-spacing:0.3em;color:rgba(201,147,58,0.6);margin:4px 0 24px;">SOUL POINTS EARNED</div>
-
-  <div class="epilogue-box" id="win-epilogue">
-    <h3>✦ EPILOGUE — WHAT HAPPENED</h3>
-  </div>
-
-  <div id="win-stats-block" style="max-width:500px;margin:20px auto;display:flex;justify-content:center;gap:30px;flex-wrap:wrap;"></div>
-  <button class="btn btn-gold" onclick="restart()" style="margin-top:20px;">✦ Play Another Chronicle ✦</button>
+  <div style="font-size:0.85rem;color:rgba(255,183,197,0.4);margin:4px 0 20px;letter-spacing:0.3em;">魂は解放された</div>
+  <div class="score-big" id="win-score">0</div>
+  <div style="font-family:'Cinzel Decorative',serif;font-size:0.6rem;letter-spacing:0.3em;color:rgba(201,147,58,0.5);margin:4px 0 20px;">SOUL POINTS EARNED</div>
+  <div id="win-stats" style="display:flex;gap:24px;flex-wrap:wrap;justify-content:center;margin-bottom:20px;"></div>
+  <div class="epilogue-wrap" id="win-epi"><h3>✦ EPILOGUE — WHAT HAPPENED</h3></div>
+  <button class="btn btn-gold btn-lg" onclick="restart()" style="margin-top:24px;">✦ Play Again ✦</button>
 </div>
 
-<!-- ============================================================ -->
-<!-- GAME OVER SCREEN -->
-<!-- ============================================================ -->
-<div id="gameover-screen" class="screen">
-  <br><br>
-  <span style="font-size:5rem;display:block;text-align:center;">🌑</span>
-  <div style="font-family:'Cinzel Decorative',serif;font-size:2.5rem;color:#ff6b8a;text-align:center;filter:drop-shadow(0 0 30px rgba(255,107,138,0.5));margin:16px 0;">
-    THE PETALS HAVE FALLEN
+<!-- LOSE SCREEN -->
+<div class="screen" id="lose-screen">
+  <span style="font-size:5rem;display:block;">🌑</span>
+  <div style="font-family:'Cinzel Decorative',serif;font-size:2.5rem;color:#ff4466;filter:drop-shadow(0 0 30px rgba(255,68,102,0.5));margin:16px 0;text-align:center;">THE PETALS HAVE FALLEN</div>
+  <div style="font-size:0.9rem;color:rgba(255,107,138,0.4);letter-spacing:0.3em;margin-bottom:20px;">花びらは散りました</div>
+  <div class="score-big" id="lose-score" style="color:#ff8899;">0</div>
+  <div style="font-family:'Cinzel Decorative',serif;font-size:0.6rem;letter-spacing:0.3em;color:rgba(255,68,102,0.4);margin:4px 0 20px;">FINAL SOUL COUNT</div>
+  <div class="epilogue-wrap" id="lose-epi" style="border-color:rgba(255,68,102,0.2);">
+    <h3 style="color:#ff8899;">✦ WHAT WILL HAPPEN — IF NO ONE COMES</h3>
   </div>
-  <div style="font-family:'Sawarabi Mincho',serif;font-size:1.1rem;color:rgba(255,107,138,0.4);text-align:center;margin-bottom:24px;">
-    花びらは散りました
-  </div>
-
-  <div class="epilogue-box" id="gameover-epilogue" style="max-width:640px;margin:0 auto 24px;">
-    <h3 style="color:#ff9aaa;">✦ WHAT WILL HAPPEN — IF NO ONE COMES</h3>
-  </div>
-
-  <div style="text-align:center;">
-    <div class="score-big" id="gameover-score" style="color:#ff9aaa;">0</div>
-    <div style="font-family:'Cinzel Decorative',serif;font-size:0.65rem;color:rgba(255,107,138,0.5);letter-spacing:0.3em;margin:4px 0 24px;">FINAL SOUL COUNT</div>
-    <button class="btn btn-danger" onclick="restart()">✦ Try Again ✦</button>
-  </div>
+  <button class="btn btn-danger btn-lg" onclick="restart()" style="margin-top:24px;">✦ Try Again ✦</button>
 </div>
-
-</div><!-- #app -->
-
-<!-- ============================================================ -->
-<!-- ENCOUNTER MODAL -->
-<!-- ============================================================ -->
-<div id="modal-overlay" class="modal-overlay" style="display:none;">
-  <div class="modal">
-    <div class="modal-type-badge" id="modal-badge">— EVENT —</div>
-    <div class="modal-title" id="modal-title">ENCOUNTER</div>
-    <div class="modal-jp" id="modal-jp">出会い</div>
-    <span class="encounter-art" id="modal-art">?</span>
-    <div class="modal-desc" id="modal-desc"></div>
-    <div class="modal-hint" id="modal-hint-text"></div>
-    <div class="modal-actions" id="modal-actions"></div>
-  </div>
-</div>
-
-<!-- PETALS -->
-<div id="petal-layer"></div>
 
 <script>
-// ============================
-// TAMASHII — GAME ENGINE
-// ============================
+// ═══════════════════════════════════════════════════════
+//  THREE.JS 3D WORLD
+// ═══════════════════════════════════════════════════════
+const canvas = document.getElementById('three-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x0d0508, 0.018);
+
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 200);
+camera.position.set(0, 14, 22);
+camera.lookAt(0, 0, 0);
+
+// LIGHTS
+const ambLight = new THREE.AmbientLight(0x1a0508, 1.2);
+scene.add(ambLight);
+const moonLight = new THREE.DirectionalLight(0xffeedd, 0.8);
+moonLight.position.set(10, 20, 10);
+moonLight.castShadow = true;
+scene.add(moonLight);
+const sakuraLight = new THREE.PointLight(0xff88aa, 1.5, 40);
+sakuraLight.position.set(0, 8, 0);
+scene.add(sakuraLight);
+const spiritLight = new THREE.PointLight(0x9b59b6, 1.2, 35);
+spiritLight.position.set(-8, 5, -8);
+scene.add(spiritLight);
+
+// MAIN PLATFORM
+const mainIslandGeo = new THREE.CylinderGeometry(16, 11, 1.2, 8);
+const mainIslandMat = new THREE.MeshLambertMaterial({ color: 0x120810 });
+const mainIsland = new THREE.Mesh(mainIslandGeo, mainIslandMat);
+mainIsland.position.set(0, -1.5, 0);
+mainIsland.receiveShadow = true;
+scene.add(mainIsland);
+
+// STARS
+const starGeo = new THREE.BufferGeometry();
+const starCount = 800;
+const starPos = new Float32Array(starCount * 3);
+for (let i = 0; i < starCount * 3; i++) starPos[i] = (Math.random() - 0.5) * 200;
+starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+const starMat = new THREE.PointsMaterial({ color: 0xffeedd, size: 0.18, transparent: true, opacity: 0.7 });
+const stars = new THREE.Points(starGeo, starMat);
+scene.add(stars);
+
+// FLOATING PETALS
+const petalGeo = new THREE.BufferGeometry();
+const petalCount = 120;
+const petalPositions = new Float32Array(petalCount * 3);
+const petalVels = [];
+for (let i = 0; i < petalCount; i++) {
+  petalPositions[i*3]   = (Math.random()-0.5)*30;
+  petalPositions[i*3+1] = Math.random()*20-5;
+  petalPositions[i*3+2] = (Math.random()-0.5)*30;
+  petalVels.push({ vx:(Math.random()-0.5)*0.015, vy:-0.01-Math.random()*0.015, vz:(Math.random()-0.5)*0.01 });
+}
+petalGeo.setAttribute('position', new THREE.BufferAttribute(petalPositions, 3));
+const petalMat = new THREE.PointsMaterial({ color: 0xffb7c5, size: 0.22, transparent: true, opacity: 0.75 });
+const petalSystem = new THREE.Points(petalGeo, petalMat);
+scene.add(petalSystem);
+
+// SOUL TREE
+function buildSoulTree() {
+  const group = new THREE.Group();
+  const trunkGeo = new THREE.CylinderGeometry(0.3, 0.5, 5, 8);
+  const trunkMat = new THREE.MeshLambertMaterial({ color: 0x4a1a2a });
+  const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+  trunk.position.y = 2.5; trunk.castShadow = true;
+  group.add(trunk);
+  [[0,5.5,0,1.8],[1.2,4.5,0,1.2],[-1.2,4.5,0.5,1.2],[0,4.8,1.2,1.0],[-0.8,5.0,-1,1.3]].forEach(([x,y,z,r])=>{
+    const bGeo = new THREE.SphereGeometry(r, 8, 6);
+    const bMat = new THREE.MeshLambertMaterial({ color: 0xffb7c5, transparent: true, opacity: 0.55 });
+    const b = new THREE.Mesh(bGeo, bMat);
+    b.position.set(x, y, z);
+    group.add(b);
+  });
+  const glowGeo = new THREE.SphereGeometry(0.4, 8, 8);
+  const glowMat = new THREE.MeshBasicMaterial({ color: 0xffd700, transparent: true, opacity: 0.85 });
+  const glow = new THREE.Mesh(glowGeo, glowMat);
+  glow.position.set(0, 7.5, 0);
+  group.add(glow);
+  return group;
+}
+const soulTree = buildSoulTree();
+scene.add(soulTree);
+
+// NODES
+const NODE_COLORS = {
+  start:0xc9933a, exit:0xffd700, chest:0xf0c060, oni:0xff4466,
+  shrine:0x1abc9c, portal:0x9b59b6, curse:0x8b0020, scroll:0x7fa8c8,
+  relic:0xd4a0ff, normal:0x2d1320, heal:0x22ddaa
+};
+const nodeObjects = [];
+const NODE_TYPES = ['normal','normal','chest','oni','shrine','portal','curse','scroll','relic','normal','heal'];
+const NODES = [];
+
+function buildNode3D(nx, nz, type, idx) {
+  const g = new THREE.Group();
+  const cylGeo = new THREE.CylinderGeometry(0.9, 0.75, 0.35, 7);
+  const col = NODE_COLORS[type] || 0x2d1320;
+  const cylMat = new THREE.MeshLambertMaterial({ color: col });
+  const cyl = new THREE.Mesh(cylGeo, cylMat);
+  cyl.castShadow = true; cyl.receiveShadow = true;
+  g.add(cyl);
+  const ringGeo = new THREE.TorusGeometry(1.0, 0.06, 8, 24);
+  const ringMat = new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.6 });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.rotation.x = Math.PI / 2; ring.position.y = 0.2;
+  g.add(ring);
+  const orbGeo = new THREE.SphereGeometry(0.28, 8, 8);
+  const orbMat = new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.85 });
+  const orb = new THREE.Mesh(orbGeo, orbMat);
+  orb.position.y = 0.85;
+  g.add(orb);
+  g.position.set(nx, 0, nz);
+  g._idx = idx; g._type = type; g._orb = orb; g._ring = ringMat;
+  scene.add(g);
+  nodeObjects.push(g);
+  return g;
+}
+
+function buildNodeGrid() {
+  nodeObjects.forEach(n => scene.remove(n));
+  nodeObjects.length = 0;
+  NODES.length = 0;
+  const cols = 5, rows = 5;
+  const spacingX = 4.2, spacingZ = 3.8;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const idx = r * cols + c;
+      const x = (c - 2) * spacingX + (r % 2) * 2.1;
+      const z = (r - 2) * spacingZ;
+      const type = idx === 0 ? 'start' : idx === 24 ? 'exit'
+        : NODE_TYPES[Math.floor(Math.random() * NODE_TYPES.length)];
+      const n3 = buildNode3D(x, z, type, idx);
+      NODES.push({ id: idx, x, z, type, visited: false, cleared: false, obj: n3 });
+    }
+  }
+  NODES.forEach((n, i) => {
+    if (i % 5 < 4) drawLine3D(n, NODES[i+1]);
+    if (i < 20) drawLine3D(n, NODES[i+5]);
+  });
+}
+
+function drawLine3D(a, b) {
+  const pts = [new THREE.Vector3(a.x, 0.1, a.z), new THREE.Vector3(b.x, 0.1, b.z)];
+  const geo = new THREE.BufferGeometry().setFromPoints(pts);
+  const mat = new THREE.LineBasicMaterial({ color: 0x3a1a25, transparent: true, opacity: 0.4 });
+  scene.add(new THREE.Line(geo, mat));
+}
+
+// PLAYER
+let playerMesh = null;
+function buildPlayer(classKey) {
+  if (playerMesh) scene.remove(playerMesh);
+  const g = new THREE.Group();
+  const cols = { kenshi:0xff6688, miko:0xffd4e8, kitsune:0xff8844, ryuujin:0x44aaff };
+  const col = cols[classKey] || 0xffb7c5;
+  const bodyGeo = new THREE.CylinderGeometry(0.2, 0.28, 0.8, 8);
+  const bodyMat = new THREE.MeshLambertMaterial({ color: col });
+  const body = new THREE.Mesh(bodyGeo, bodyMat);
+  body.position.y = 0.85; body.castShadow = true;
+  g.add(body);
+  const headGeo = new THREE.SphereGeometry(0.22, 8, 8);
+  const headMat = new THREE.MeshLambertMaterial({ color: 0xffddcc });
+  const head = new THREE.Mesh(headGeo, headMat);
+  head.position.y = 1.55; head.castShadow = true;
+  g.add(head);
+  if (classKey === 'kenshi') {
+    const sGeo = new THREE.CylinderGeometry(0.03, 0.03, 1.1, 5);
+    const sMat = new THREE.MeshLambertMaterial({ color: 0xcccccc });
+    const sword = new THREE.Mesh(sGeo, sMat);
+    sword.position.set(0.4, 0.9, 0); sword.rotation.z = 0.3;
+    g.add(sword);
+  }
+  const auraGeo = new THREE.SphereGeometry(0.55, 8, 8);
+  const auraMat = new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.1, side: THREE.BackSide });
+  g.add(new THREE.Mesh(auraGeo, auraMat));
+  g.position.set(NODES[0].x, 0.18, NODES[0].z);
+  g._baseY = 0.18;
+  scene.add(g);
+  playerMesh = g;
+}
+
+// CAMERA
+let camTarget = new THREE.Vector3(0, 14, 22);
+let camLook = new THREE.Vector3(0, 0, 0);
+function moveCameraTo(node) {
+  camTarget.set(node.x, 14, node.z + 20);
+  camLook.set(node.x, 0, node.z);
+}
+
+// RAYCASTER
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+const tooltip = document.getElementById('node-tooltip');
+canvas.addEventListener('mousemove', e => {
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(scene.children, true);
+  let found = null;
+  for (const h of hits) {
+    let obj = h.object;
+    while (obj.parent && obj._idx === undefined) obj = obj.parent;
+    if (obj._idx !== undefined) { found = obj; break; }
+  }
+  if (found && found._type) {
+    tooltip.textContent = found._type.toUpperCase() + (found._idx === G.position ? ' — YOU ARE HERE' : '');
+    tooltip.style.display = 'block';
+    tooltip.style.left = (e.clientX + 14) + 'px';
+    tooltip.style.top  = (e.clientY - 10) + 'px';
+  } else {
+    tooltip.style.display = 'none';
+  }
+});
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// ANIMATION LOOP
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  camera.position.lerp(camTarget, 0.04);
+  camera.lookAt(new THREE.Vector3(camLook.x, camLook.y, camLook.z));
+  soulTree.children.forEach((c, i) => {
+    if (c.geometry && c.geometry.type === 'SphereGeometry' && i > 0 && i < 6) {
+      c.scale.setScalar(1 + Math.sin(t * 0.8 + i) * 0.05);
+    }
+  });
+  soulTree.rotation.y = t * 0.1;
+  sakuraLight.intensity = 1.2 + Math.sin(t * 1.2) * 0.4;
+  spiritLight.intensity = 1.0 + Math.sin(t * 0.9 + 1) * 0.35;
+  nodeObjects.forEach((n, i) => {
+    if (n._orb) {
+      n._orb.position.y = 0.85 + Math.sin(t * 1.5 + i * 0.4) * 0.12;
+      n._orb.scale.setScalar(1 + Math.sin(t * 2 + i) * 0.06);
+    }
+  });
+  if (playerMesh) {
+    playerMesh.position.y = playerMesh._baseY + Math.sin(t * 2) * 0.08;
+    playerMesh.rotation.y = t * 0.5;
+    const nd = NODES[G.position];
+    if (nd) {
+      playerMesh.position.x += (nd.x - playerMesh.position.x) * 0.1;
+      playerMesh.position.z += (nd.z - playerMesh.position.z) * 0.1;
+    }
+  }
+  const pa = petalGeo.attributes.position.array;
+  for (let i = 0; i < petalCount; i++) {
+    pa[i*3]   += petalVels[i].vx;
+    pa[i*3+1] += petalVels[i].vy;
+    pa[i*3+2] += petalVels[i].vz;
+    if (pa[i*3+1] < -6) { pa[i*3+1] = 15; pa[i*3] = (Math.random()-0.5)*30; pa[i*3+2] = (Math.random()-0.5)*30; }
+  }
+  petalGeo.attributes.position.needsUpdate = true;
+  stars.rotation.y = t * 0.008;
+  renderer.render(scene, camera);
+}
+animate();
+
+// ═══════════════════════════════════════════════════════
+//  GAME ENGINE
+// ═══════════════════════════════════════════════════════
 const CLASSES = {
-  kenshi:   { icon:'⚔️', jpName:'剣士', hp:95,  rerolls:0, purify:0 },
-  miko:     { icon:'⛩️', jpName:'巫女', hp:100, rerolls:0, purify:3 },
-  kitsune:  { icon:'🦊', jpName:'狐',   hp:85,  rerolls:2, purify:0 },
-  ryuujin:  { icon:'🐉', jpName:'龍神', hp:130, rerolls:0, purify:0 },
+  kenshi:  { icon:'⚔️', jp:'剣士', hp:95,  rerolls:0, purify:0 },
+  miko:    { icon:'⛩️', jp:'巫女', hp:100, rerolls:0, purify:3 },
+  kitsune: { icon:'🦊', jp:'狐',   hp:85,  rerolls:2, purify:0 },
+  ryuujin: { icon:'🐉', jp:'龍神', hp:130, rerolls:0, purify:0 }
 };
-
 const MODES = {
-  bond:   { label:'BOND OF SOULS',  color:'var(--sakura)',      turns:20, total:3, jp:'魂の絆' },
-  relic:  { label:'RELIC HUNT',     color:'var(--gold-light)',  turns:28, total:5, jp:'遺物狩り' },
-  spirit: { label:'SPIRIT VIGIL',   color:'var(--spirit-light)',turns:25, total:0, jp:'精神の守護' },
+  bond:   { label:'BOND OF SOULS', turns:20, total:3 },
+  relic:  { label:'RELIC HUNT',    turns:28, total:5 },
+  spirit: { label:'SPIRIT VIGIL',  turns:25, total:1 }
+};
+const RECOVERY = {
+  prayer:  { name:'Shrine Prayer',  hp:25, cooldown:3, last:-99, emoji:'🙏' },
+  herb:    { name:'Spirit Herb',    hp:20, cooldown:2, uses:3,   usesLeft:3, last:-99, emoji:'🌿' },
+  dragon:  { name:'Dragon Breath',  hp:35, cooldown:5, last:-99, emoji:'🐉' },
+  meditate:{ name:'Meditate',       hp:15, cooldown:4, last:-99, emoji:'🧘' },
+  offer:   { name:'Soul Offering',  hp:50, scoreCost:200, uses:2, usesLeft:2, last:-99, emoji:'🕯️' }
 };
 
-let state = {};
+let G = {};
 let selClass = '', selMode = '';
-let hintIndex = 0;
+let hintIdx = 0;
 
 const HINTS = [
-  '🌸 Shrine tiles restore HP. Seek them when your life force is low.',
-  '⚔️ Fighting Oni with high karma (Light) grants bonus soul points.',
-  '🦊 Kitsune re-rolls are best saved for curse or Oni tiles.',
-  '⛩️ Miko can purify a cursed tile — use it to avoid deadly traps.',
-  '💎 Some relics heal; others increase your combat dice roll.',
-  '🐉 Ryuujin takes only half damage from all trap tiles.',
-  '🌀 Spirit Portals can jump you 2–6 nodes forward — or backward!',
-  '☯️ Choices of mercy build Light karma. Karma affects your endings.',
-  '📜 Read every scroll. They contain fragments of the Goddess\'s story.',
-  '🌑 Dark karma players receive darker versions of the epilogue.',
-  '⚱️ Collecting 5 relics in Relic Hunt mode shows a secret cutscene.',
-  '🕯️ In Spirit Vigil, every 5 turns you survive purifies one lost soul.',
-  '💡 The exit tile only works when all objectives are complete.',
-  '🎲 Rolling a 6 on a combat tile is always a critical — bonus 50pts!',
-  '🌸 The Soul Tree blooms more with each soul you save. Watch the log.',
+  '🌸 LIFE RECOVERY: Use the left panel to restore HP between turns.',
+  '🙏 Shrine Prayer recovers 25 HP — cooldown 3 turns.',
+  '🌿 Spirit Herb restores 20 HP — you carry 3. Use wisely.',
+  '🐉 Dragon Breath is Ryuujin only — 35 HP, 5-turn cooldown.',
+  '🧘 Meditating grants +15 HP per turn for 3 turns.',
+  '🕯️ Soul Offering sacrifices 200 pts for 50 HP.',
+  '⚔️ Kenshi: rolls 5-6 are critical strikes — double damage!',
+  '⛩️ Miko: purify a cursed tile 3 times per game.',
+  '🦊 Kitsune: re-roll the dice twice per game.',
+  '☯️ Light karma boosts shrine healing by +10 HP.',
+  '🌀 Portals can send you forward OR backward.',
+  '👺 Defeating Oni with high karma grants bonus points.',
+  '💡 Exit node only activates when ALL objectives are complete.',
+  '🎲 Rolling 6 on any combat triggers a perfect victory.'
 ];
 
-const NODE_TYPES = ['normal','normal','chest','oni','shrine','portal','curse','scroll','relic','normal'];
-
-const MAP_NODES = [];
-function buildMap() {
-  MAP_NODES.length = 0;
-  for(let i=0;i<25;i++) {
-    const col = i%5, row = Math.floor(i/5);
-    const x = 46 + col*88 + (row%2)*44;
-    const y = 38 + row*58;
-    let type = i===0?'start':i===24?'exit':NODE_TYPES[Math.floor(Math.random()*NODE_TYPES.length)];
-    MAP_NODES.push({id:i, x, y, type, visited:false, cleared:false});
-  }
+function pickClass(c) {
+  selClass = c;
+  document.querySelectorAll('.cls-card').forEach(el => el.classList.remove('sel'));
+  document.getElementById('cls-'+c).classList.add('sel');
+  playTone(660, 'sine', 0.08, 0.07);
 }
-
-// RENDER SVG MAP
-function renderMap() {
-  const svg = document.getElementById('map-svg');
-  svg.innerHTML = '';
-
-  // grid lines
-  MAP_NODES.forEach((n,i) => {
-    if(i%5<4) drawEdge(svg, n, MAP_NODES[i+1]);
-    if(i<20)  drawEdge(svg, n, MAP_NODES[i+5]);
-  });
-
-  MAP_NODES.forEach((n,i) => {
-    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
-    g.setAttribute('transform',`translate(${n.x},${n.y})`);
-
-    const nodeColors = {
-      start:'#c9933a', exit:'#c9933a', chest:'#f0c060', oni:'#ff6b8a',
-      shrine:'#1abc9c', portal:'#9b59b6', curse:'#8b0030', scroll:'#7fa8c8',
-      relic:'#d4a0ff', normal:'#2d1320'
-    };
-    const nodeIcons = {
-      start:'⛩', exit:'🌸', chest:'📦', oni:'👺', shrine:'⛩',
-      portal:'🌀', curse:'💀', scroll:'📜', relic:'⚱️', normal:''
-    };
-
-    // Hexagon
-    const r = 19;
-    const pts = Array.from({length:6},(_,k)=>{
-      const a=Math.PI/180*(60*k-30);
-      return `${r*Math.cos(a)},${r*Math.sin(a)}`;
-    }).join(' ');
-    const hex = document.createElementNS('http://www.w3.org/2000/svg','polygon');
-    hex.setAttribute('points',pts);
-    hex.setAttribute('fill', state.position===i ? 'rgba(201,147,58,0.2)' : n.visited ? 'rgba(13,5,8,0.7)' : 'rgba(13,5,8,0.9)');
-    hex.setAttribute('stroke', state.position===i ? '#c9933a' : (n.cleared ? 'rgba(201,147,58,0.15)' : (nodeColors[n.type]||'#2d1320')));
-    hex.setAttribute('stroke-width', state.position===i ? '2.5' : '1.5');
-    hex.setAttribute('opacity', n.visited&&!state.position===i ? '0.5' : '1');
-    g.appendChild(hex);
-
-    // Player pos ring
-    if(state.position===i) {
-      const ring = document.createElementNS('http://www.w3.org/2000/svg','circle');
-      ring.setAttribute('r','13'); ring.setAttribute('fill','none');
-      ring.setAttribute('stroke','rgba(255,183,197,0.5)'); ring.setAttribute('stroke-width','2');
-      ring.innerHTML = '<animate attributeName="r" values="12;16;12" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.7;0.2;0.7" dur="2s" repeatCount="indefinite"/>';
-      g.appendChild(ring);
-    }
-
-    // Icon text
-    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
-    t.setAttribute('text-anchor','middle'); t.setAttribute('dominant-baseline','central');
-    t.setAttribute('font-size','12');
-    t.textContent = state.position===i
-      ? (CLASSES[state.playerClass]?.icon||'?')
-      : (n.cleared ? '·' : (nodeIcons[n.type]||''));
-    g.appendChild(t);
-
-    svg.appendChild(g);
-  });
+function pickMode(m) {
+  selMode = m;
+  document.querySelectorAll('.mode-card').forEach(el => el.classList.remove('sel'));
+  document.getElementById('mode-'+m).classList.add('sel');
+  playTone(550, 'sine', 0.08, 0.07);
 }
-
-function drawEdge(svg,a,b) {
-  const l = document.createElementNS('http://www.w3.org/2000/svg','line');
-  l.setAttribute('x1',a.x); l.setAttribute('y1',a.y);
-  l.setAttribute('x2',b.x); l.setAttribute('y2',b.y);
-  l.setAttribute('stroke','rgba(201,147,58,0.07)'); l.setAttribute('stroke-width','1');
-  svg.appendChild(l);
-}
-
-// ============================
-// UI HELPERS
-// ============================
-
-function selectClass(cls) {
-  selClass = cls;
-  document.querySelectorAll('.class-card').forEach(c=>c.classList.remove('selected'));
-  document.getElementById('class-'+cls)?.classList.add('selected');
-  playSound('select');
-}
-function selectMode(mode) {
-  selMode = mode;
-  document.querySelectorAll('.mode-card').forEach(c=>c.classList.remove('selected'));
-  playSound('select');
+function nextHint() {
+  hintIdx = (hintIdx + 1) % HINTS.length;
+  document.getElementById('hint-text').textContent = HINTS[hintIdx];
+  playTone(440, 'triangle', 0.08, 0.06);
 }
 
 function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  if (id) document.getElementById(id).classList.add('active');
 }
 
-function addLog(msg, type='neutral') {
-  const log = document.getElementById('event-log');
-  const d = document.createElement('div');
-  d.className='log-entry '+type;
-  d.innerHTML = msg;
-  log.prepend(d);
-  while(log.children.length>60) log.removeChild(log.lastChild);
-}
-
-function cycleHint() {
-  hintIndex = (hintIndex+1)%HINTS.length;
-  document.getElementById('hint-display').innerHTML = HINTS[hintIndex];
-  playSound('hint');
-}
-
-function updateStats() {
-  document.getElementById('score-disp').textContent = state.score;
-  document.getElementById('turn-disp').textContent = `${state.turn}/${state.turnLimit}`;
-  document.getElementById('hp-num').textContent = Math.max(0,state.hp);
-  document.getElementById('hp-fill').style.width = Math.max(0,(state.hp/state.maxHp)*100)+'%';
-  document.getElementById('stat-kills').textContent = state.kills;
-  document.getElementById('stat-shrines').textContent = state.shrines;
-  document.getElementById('stat-portals').textContent = state.portals;
-  document.getElementById('stat-souls').textContent = state.soulsSaved;
-  document.getElementById('stat-rerolls').textContent = state.rerolls;
-
-  // Karma
-  const k = state.karma; // -100 to +100
-  const lightPct = Math.max(0, k/100*50);
-  const darkPct  = Math.max(0, -k/100*50);
-  document.getElementById('karma-light').style.width = lightPct+'%';
-  document.getElementById('karma-dark').style.width  = darkPct+'%';
-  const kLabel = k>40?'Pure Light':k>10?'Light':k>-10?'Neutral':k>-40?'Shadow':'Dark Soul';
-  document.getElementById('karma-disp').textContent = kLabel;
-  document.getElementById('karma-desc').textContent =
-    k>30 ? 'Your light karma opens mercy paths and empowers shrine healing.' :
-    k<-30 ? 'Dark karma makes Oni fear you, but spirits keep their distance.' :
-    'Your karma is balanced. Both paths remain open to you.';
-
-  // Progress
-  let prog=0;
-  if(state.gameMode==='bond') prog=(state.soulFragments/3)*100;
-  else if(state.gameMode==='relic') prog=(state.relicsFound/5)*100;
-  else prog=(state.turn/state.turnLimit)*100;
-  prog=Math.min(100,prog);
-  document.getElementById('prog-fill').style.width=prog+'%';
-  document.getElementById('prog-pct').textContent=Math.round(prog)+'%';
-}
-
-function renderObjectives() {
-  const el=document.getElementById('objectives-list');
-  el.innerHTML='';
-  state.objectives.forEach(o=>{
-    const d=document.createElement('div');
-    d.className='obj-item'+(o.done?' done':'');
-    d.innerHTML=`<span class="obj-dot">${o.done?'✦':'○'}</span>${o.label}`;
-    el.appendChild(d);
-  });
-}
-
-function renderInventory() {
-  const g=document.getElementById('inventory-grid');
-  g.innerHTML='';
-  for(let i=0;i<8;i++) {
-    const slot=document.createElement('div');
-    slot.className='inv-slot';
-    if(state.inventory[i]){
-      slot.textContent=state.inventory[i].icon;
-      slot.title=state.inventory[i].name.toUpperCase();
-    }
-    g.appendChild(slot);
-  }
-}
-
-function renderRerolls() {
-  const z=document.getElementById('reroll-zone');
-  z.innerHTML='';
-  if(state.rerolls>0){
-    const b=document.createElement('button');
-    b.className='hint-toggle';
-    b.style.borderColor='rgba(155,89,182,0.4)'; b.style.color='var(--spirit-light)';
-    b.textContent=`⟡ Re-Roll the Dice (${state.rerolls} left) ⟡`;
-    b.onclick=()=>{ if(!state.rolling&&!state.pending&&state.rerolls>0){state.rerolls--;rollDice();} };
-    z.appendChild(b);
-  }
-  if(state.playerClass==='miko'&&state.purify>0){
-    const b2=document.createElement('button');
-    b2.className='hint-toggle';
-    b2.style.marginTop='6px'; b2.style.borderColor='rgba(26,188,156,0.4)'; b2.style.color='var(--teal-light)';
-    b2.textContent=`⟡ Purify Next Tile (${state.purify} left) ⟡`;
-    b2.onclick=()=>{ if(state.purify>0){state.purifyNext=true; state.purify--; addLog('⛩️ Purification ready. Next curse/trap will be cleansed.','good'); renderRerolls();} };
-    z.appendChild(b2);
-  }
-}
-
-// ============================
-// START GAME
-// ============================
 function startGame() {
-  const name=document.getElementById('player-name-input').value.trim();
-  if(!name){document.getElementById('player-name-input').style.borderColor='#ff6b8a';return;}
-  if(!selClass){alert('Choose your spirit path, wanderer.');return;}
-  if(!selMode){alert('Choose your sacred quest.');return;}
+  const name = document.getElementById('nameInput').value.trim();
+  if (!name) { document.getElementById('nameInput').style.borderColor='#ff4466'; return; }
+  if (!selClass) { flashError('Choose your spirit class!'); return; }
+  if (!selMode)  { flashError('Choose your sacred quest!'); return; }
 
-  const cls=CLASSES[selClass], mode=MODES[selMode];
-  state={
-    playerName:name, playerClass:selClass, gameMode:selMode,
-    hp:cls.hp, maxHp:cls.hp, score:0, turn:1,
-    position:0, kills:0, shrines:0, portals:0, soulsSaved:0,
-    rerolls:cls.rerolls, purify:cls.purify, purifyNext:false,
-    karma:0, inventory:[], objectives:[],
-    turnLimit:mode.turns, gameOver:false, rolling:false, pending:false,
-    soulFragments:0, relicsFound:0,
-    objectivesTotal:mode.total,
+  const cls = CLASSES[selClass];
+  const mode = MODES[selMode];
+
+  G = {
+    name, cls: selClass, mode: selMode,
+    hp: cls.hp, maxHp: cls.hp,
+    score: 0, turn: 1, turnLimit: mode.turns,
+    position: 0,
+    kills: 0, shrines: 0, portals: 0, soulsSaved: 0,
+    karma: 0,
+    rerolls: cls.rerolls, purify: cls.purify, purifyNext: false,
+    inventory: [],
+    objectives: [],
+    soulFragments: 0, relicsFound: 0,
+    meditating: 0,
+    gameOver: false, rolling: false, pending: false,
   };
+
+  Object.keys(RECOVERY).forEach(k => {
+    RECOVERY[k].last = -99;
+    if (RECOVERY[k].usesLeft !== undefined) RECOVERY[k].usesLeft = RECOVERY[k].uses;
+  });
+
   buildObjectives();
-  buildMap();
-  MAP_NODES[0].visited=true;
+  buildNodeGrid();
+  buildPlayer(selClass);
+  NODES[0].visited = true;
 
-  document.getElementById('display-name').textContent=name;
-  document.getElementById('display-class').textContent=cls.jpName+' — '+selClass.toUpperCase();
-  document.getElementById('player-avatar').textContent=cls.icon;
+  document.getElementById('hud-name').textContent = name;
+  document.getElementById('hud-class').textContent = cls.jp + ' — ' + selClass.toUpperCase();
+  document.getElementById('hud-avatar').textContent = cls.icon;
 
-  showScreen('game-screen');
-  updateStats(); renderMap(); renderObjectives(); renderInventory(); renderRerolls();
-  playSound('startup');
+  // HIDE all screens and show HUD
+  showScreen(null);
+  document.getElementById('hud').classList.add('active');
+  document.getElementById('hud-bottom').classList.add('active');
+
+  spawnAmbientPetals();
+  buildActionBtns();
+  updateHUD(); renderObjectives(); updateLifeButtons();
+  moveCameraTo(NODES[0]);
+  playStartup();
+  log('[ The 3D Spirit Realm opens. Roll to begin your journey. ]', 'li-special');
+}
+
+function flashError(msg) {
+  const div = document.createElement('div');
+  div.style.cssText = `position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:200;background:rgba(255,68,102,0.15);border:1px solid #ff4466;border-radius:6px;padding:16px 32px;font-family:'Cinzel Decorative',serif;font-size:0.8rem;color:#ff8899;letter-spacing:0.15em;text-align:center;pointer-events:none;animation:fadeLabel 0.4s ease forwards;`;
+  div.textContent = msg;
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 2000);
 }
 
 function buildObjectives() {
-  if(state.gameMode==='bond'){
-    state.objectives=[
-      {label:'Find the Fragment of Memory (北)',done:false},
-      {label:'Find the Fragment of Love (南)',done:false},
-      {label:'Return to the Soul Gate (魂)',done:false},
+  if (G.mode === 'bond') {
+    G.objectives = [
+      {label:'Fragment of Memory', done:false},
+      {label:'Fragment of Love',   done:false},
+      {label:'Return to Soul Gate',done:false}
     ];
-  } else if(state.gameMode==='relic'){
-    state.objectives=Array.from({length:5},(_,i)=>({label:`Sacred Relic ${i+1}`,done:false}));
+  } else if (G.mode === 'relic') {
+    G.objectives = Array.from({length:5}, (_,i) => ({label:`Sacred Relic ${i+1}`, done:false}));
   } else {
-    state.objectives=[{label:'Survive 25 turns for the Soul Tree',done:false}];
+    G.objectives = [{label:'Survive 25 turns', done:false}];
   }
 }
 
-// ============================
-// DICE + MOVEMENT
-// ============================
+function buildActionBtns() {
+  const c = document.getElementById('action-btns');
+  c.innerHTML = '';
+  if (G.rerolls > 0) {
+    const b = document.createElement('button');
+    b.className = 'btn btn-spirit'; b.style.cssText='padding:8px 14px;font-size:0.58rem;';
+    b.textContent = `⟡ Re-Roll (${G.rerolls}x)`;
+    b.onclick = () => { if (!G.rolling && !G.pending && G.rerolls > 0) { G.rerolls--; rollDice(); buildActionBtns(); } };
+    c.appendChild(b);
+  }
+  if (G.cls === 'miko' && G.purify > 0) {
+    const b2 = document.createElement('button');
+    b2.className = 'btn btn-teal'; b2.style.cssText='padding:8px 14px;font-size:0.58rem;';
+    b2.textContent = `⛩ Purify (${G.purify}x)`;
+    b2.onclick = () => { if (G.purify > 0) { G.purifyNext = true; G.purify--; log('⛩️ Purification ready. Next curse is cleansed.', 'li-good'); buildActionBtns(); } };
+    c.appendChild(b2);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  CINEMATIC DICE ROLL SEQUENCE
+// ═══════════════════════════════════════════════════════
+let cinemaActive = false;
+
 function rollDice() {
-  if(state.rolling||state.gameOver||state.pending) return;
-  state.rolling=true;
-  const dice=document.getElementById('dice');
-  dice.classList.add('rolling');
-  playSound('roll');
-
-  let ticks=0;
-  const id=setInterval(()=>{
-    dice.textContent=Math.ceil(Math.random()*6);
-    ticks++;
-    if(ticks>=14){
-      clearInterval(id);
-      const roll=Math.ceil(Math.random()*6);
-      dice.textContent=roll;
-      dice.classList.remove('rolling');
-      state.rolling=false;
-      addLog(`🎲 The dice speaks: <strong>${roll}</strong> — moving ${roll} nodes...`,'neutral');
-      setTimeout(()=>doMove(roll),400);
-    }
-  },70);
+  if (G.rolling || G.gameOver || G.pending) return;
+  G.rolling = true;
+  const smallFace = document.getElementById('dice-face');
+  smallFace.textContent = '🎲';
+  playCinematicRoll();
 }
 
-function doMove(roll) {
-  let steps = roll;
-  // Ryuujin slow — but extra HP regen
-  if(state.playerClass==='ryuujin' && roll<3) {
-    const heal=5; state.hp=Math.min(state.maxHp,state.hp+heal);
-    addLog('🐉 Dragon vitality surges. +5 HP from slow movement.','good');
-  }
-  const newPos=Math.min(state.position+steps,24);
-  state.position=newPos;
-  MAP_NODES[newPos].visited=true;
-  state.turn++;
-  state.score+=8;
-  updateStats(); renderMap();
+function playCinematicRoll() {
+  const overlay  = document.getElementById('cinema-overlay');
+  const cinema   = document.getElementById('dice-cinema');
+  const ring     = document.getElementById('spirit-ring');
+  const ring2    = document.getElementById('spirit-ring2');
+  const cDice    = document.getElementById('cinema-dice');
+  const cNum     = document.getElementById('cinema-result-num');
+  const cLabel   = document.getElementById('cinema-label');
+  const cEvent   = document.getElementById('cinema-event-text');
+  const rollLabel= document.getElementById('cinema-roll-label');
 
-  if(state.turn>state.turnLimit&&state.gameMode!=='spirit'){
-    setTimeout(()=>showEncounter('THE LAST PETAL FALLS','Oni','🌑',
-      'Time has run out. The Soul Tree\'s final petal drops into the void. The Goddess\'s light flickers and dies.',
-      'When time expires, even the bravest soul cannot hold back fate.',
-      [{label:'Accept the End',cls:'btn-danger',act:'gameover'}]),600);
+  // Reset state
+  cNum.classList.remove('show');
+  cLabel.classList.remove('show');
+  cEvent.classList.remove('show');
+  rollLabel.classList.remove('show');
+  cDice.textContent = '🎲';
+  cEvent.textContent = '';
+  cNum.textContent = '';
+
+  // Fade in dark overlay
+  overlay.classList.add('dark');
+  cinema.classList.add('active');
+  ring.classList.add('active');
+  ring2.classList.add('active');
+  cinemaActive = true;
+
+  // Show roll label
+  setTimeout(() => { rollLabel.classList.add('show'); }, 200);
+
+  // Slam dice in
+  setTimeout(() => {
+    cDice.classList.add('slam');
+    setTimeout(() => cDice.classList.remove('slam'), 600);
+    playRollSound();
+  }, 350);
+
+  // Tumbling number sequence
+  const nums = ['⚀','⚁','⚂','⚃','⚄','⚅'];
+  let tickCount = 0;
+  const totalTicks = 22;
+  const tickInterval = setInterval(() => {
+    tickCount++;
+    const speed = tickCount < 10 ? 1 : tickCount < 18 ? 2 : 3;
+    if (tickCount % speed === 0) {
+      const n = Math.ceil(Math.random() * 6);
+      cDice.textContent = nums[n-1] || n;
+      playTone(120 + n * 30, 'triangle', 0.04, 0.06);
+      cDice.classList.add('tumble');
+      setTimeout(() => cDice.classList.remove('tumble'), 80);
+    }
+    if (tickCount >= totalTicks) {
+      clearInterval(tickInterval);
+      // Final roll
+      const finalRoll = Math.ceil(Math.random() * 6);
+      cDice.textContent = nums[finalRoll-1];
+      spawnCinematicPetals();
+      revealResult(finalRoll, cDice, cNum, cLabel, cEvent, overlay, cinema, ring, ring2);
+    }
+  }, 55);
+}
+
+function revealResult(roll, cDice, cNum, cLabel, cEvent, overlay, cinema, ring, ring2) {
+  // Slam / shockwave
+  const wrap = document.getElementById('cinema-dice-wrap');
+  const sw = document.createElement('div');
+  sw.className = 'shockwave'; wrap.appendChild(sw);
+  const sw2 = document.createElement('div');
+  sw2.className = 'shockwave2'; wrap.appendChild(sw2);
+
+  // Critical / special effects
+  const isCrit = G.cls === 'kenshi' && roll >= 5;
+  if (isCrit) {
+    setTimeout(() => {
+      const slash = document.createElement('div');
+      slash.className = 'spirit-slash'; wrap.appendChild(slash);
+      const slash2 = document.createElement('div');
+      slash2.className = 'spirit-slash2'; wrap.appendChild(slash2);
+      const cf = document.createElement('div');
+      cf.className = 'crit-flash'; document.body.appendChild(cf);
+      setTimeout(() => { slash.remove(); slash2.remove(); cf.remove(); }, 500);
+    }, 100);
+  }
+
+  // Shockwave cleanup
+  setTimeout(() => { sw.remove(); sw2.remove(); }, 1000);
+
+  // Big result number
+  setTimeout(() => {
+    cNum.textContent = roll;
+    cNum.classList.add('show');
+    // Teal for high, red for low
+    cNum.style.color = roll >= 5 ? '#f0c060' : roll >= 3 ? '#ffb7c5' : '#ff8899';
+    cNum.style.textShadow = roll >= 5
+      ? '0 0 30px rgba(240,192,96,0.9), 0 0 60px rgba(240,192,96,0.5)'
+      : roll >= 3 ? '0 0 30px rgba(255,183,197,0.7)' : '0 0 30px rgba(255,68,102,0.7)';
+
+    playResultTone(roll);
+  }, 120);
+
+  // Label
+  setTimeout(() => cLabel.classList.add('show'), 300);
+
+  // Event preview text
+  setTimeout(() => {
+    const eventLabel = getNodePreview(NODES[Math.min(G.position + roll, 24)].type);
+    cEvent.textContent = isCrit ? '⚔️ CRITICAL STRIKE — ' + eventLabel : eventLabel;
+    cEvent.style.color = isCrit ? '#ffb7c5' : 'rgba(255,183,197,0.75)';
+    cEvent.classList.add('show');
+  }, 500);
+
+  // Hold for a beat, then close
+  setTimeout(() => {
+    closeCinema(overlay, cinema, ring, ring2);
+    setTimeout(() => {
+      G.rolling = false;
+      document.getElementById('dice-face').textContent = roll;
+      doMove(roll);
+    }, 200);
+  }, 1800);
+}
+
+function getNodePreview(type) {
+  const labels = {
+    oni:'👺 Oni Encountered', chest:'📦 Treasure Awaits', shrine:'⛩️ Sacred Shrine',
+    portal:'🌀 Spirit Portal', curse:'💀 Dark Curse', scroll:'📜 Ancient Scroll',
+    relic:'⚱️ Sacred Relic', heal:'💊 Healing Spring', exit:'🌸 Soul Gate',
+    normal:'🌕 Spirit Path', start:'⛩ Origin'
+  };
+  return labels[type] || '✦ Fate Awaits';
+}
+
+function closeCinema(overlay, cinema, ring, ring2) {
+  overlay.classList.remove('dark');
+  cinema.classList.remove('active');
+  ring.classList.remove('active');
+  ring2.classList.remove('active');
+  cinemaActive = false;
+  // Clean up shockwaves / slashes
+  document.querySelectorAll('.shockwave,.shockwave2,.spirit-slash,.spirit-slash2').forEach(e=>e.remove());
+}
+
+function spawnCinematicPetals() {
+  const cinema = document.getElementById('dice-cinema');
+  const petals = ['🌸','🌺','✿','❀','🌼','🌸'];
+  for (let i = 0; i < 16; i++) {
+    const p = document.createElement('div');
+    p.className = 'cinema-petal';
+    p.textContent = petals[Math.floor(Math.random() * petals.length)];
+    const angle = (Math.random() * Math.PI * 2);
+    const dist1 = 80 + Math.random() * 60;
+    const dist2 = 180 + Math.random() * 120;
+    const dist3 = 300 + Math.random() * 200;
+    p.style.setProperty('--tx1', Math.cos(angle)*dist1 + 'px');
+    p.style.setProperty('--ty1', Math.sin(angle)*dist1 + 'px');
+    p.style.setProperty('--tx2', Math.cos(angle)*dist2 + 'px');
+    p.style.setProperty('--ty2', Math.sin(angle)*dist2 + 'px');
+    p.style.setProperty('--tx3', Math.cos(angle)*dist3 + 'px');
+    p.style.setProperty('--ty3', Math.sin(angle)*dist3 + 'px');
+    p.style.left = '50%'; p.style.top = '50%';
+    p.style.fontSize = (0.8 + Math.random() * 0.9) + 'rem';
+    p.style.animationDuration = (0.8 + Math.random() * 0.8) + 's';
+    p.style.animationDelay = (Math.random() * 0.2) + 's';
+    p.style.marginLeft = '-0.5rem'; p.style.marginTop = '-0.5rem';
+    cinema.appendChild(p);
+    setTimeout(() => p.remove(), 1800);
+  }
+}
+
+// ─── LIFE RECOVERY ───
+function recoverLife(type) {
+  if (G.gameOver || G.pending) return;
+  const R = RECOVERY[type];
+  const turnsElapsed = G.turn - R.last;
+  if (type === 'dragon' && G.cls !== 'ryuujin') { log('🐉 Dragon Breath requires Ryuujin class!', 'li-bad'); return; }
+  if (R.cooldown && turnsElapsed < R.cooldown) { log(`⏳ ${R.name} on cooldown — ${R.cooldown - turnsElapsed} turns left.`, 'li-bad'); return; }
+  if (R.usesLeft !== undefined && R.usesLeft <= 0) { log(`⚠ ${R.name} — no uses remaining.`, 'li-bad'); return; }
+  if (type === 'offer' && G.score < R.scoreCost) { log(`⚠ Soul Offering requires ${R.scoreCost} pts.`, 'li-bad'); return; }
+  if (G.hp >= G.maxHp) { log('💚 Life force at maximum.', 'li-good'); return; }
+  const oldHp = G.hp;
+  if (type === 'meditate') {
+    G.meditating = 3;
+    log('🧘 Meditation begins — +15 HP each turn for 3 turns.', 'li-heal');
+  } else {
+    G.hp = Math.min(G.maxHp, G.hp + R.hp);
+    log(`${R.emoji} ${R.name} — restored +${G.hp - oldHp} HP! (${G.hp}/${G.maxHp})`, 'li-heal');
+  }
+  if (type === 'offer') G.score -= R.scoreCost;
+  R.last = G.turn;
+  if (R.usesLeft !== undefined) R.usesLeft--;
+  healFlash(); playHeal(); updateHUD(); updateLifeButtons();
+}
+
+function updateLifeButtons() {
+  const defs = [
+    {id:'lb-prayer', key:'prayer'},{id:'lb-herb', key:'herb'},
+    {id:'lb-dragon', key:'dragon'},{id:'lb-meditate', key:'meditate'},{id:'lb-offer', key:'offer'}
+  ];
+  defs.forEach(({id, key}) => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    const R = RECOVERY[key];
+    let disabled = false;
+    const turnsElapsed = G.turn - (R.last ?? -99);
+    if (R.cooldown && turnsElapsed < R.cooldown) disabled = true;
+    if (R.usesLeft !== undefined && R.usesLeft <= 0) disabled = true;
+    if (key === 'dragon' && G.cls !== 'ryuujin') disabled = true;
+    if (key === 'offer' && G.score < R.scoreCost) disabled = true;
+    if (G.hp >= G.maxHp) disabled = true;
+    btn.disabled = disabled;
+    let costLabel = '';
+    if (key === 'herb')    costLabel = `+20 HP (${R.usesLeft}/${R.uses} left)`;
+    else if (key === 'offer') costLabel = `+50 HP (-${R.scoreCost}pts)`;
+    else if (R.cooldown && turnsElapsed < R.cooldown) costLabel = `CD: ${R.cooldown - turnsElapsed}t`;
+    const lbcost = btn.querySelector('.lbcost');
+    if (lbcost && costLabel) lbcost.textContent = costLabel;
+  });
+}
+
+function healFlash() {
+  const f = document.getElementById('heal-flash');
+  f.classList.remove('show'); void f.offsetWidth; f.classList.add('show');
+  const track = document.getElementById('hp-track');
+  track.classList.add('healing');
+  setTimeout(() => track.classList.remove('healing'), 700);
+}
+
+// ─── MOVE ───
+function doMove(roll) {
+  if (G.cls === 'ryuujin' && roll < 3) {
+    G.hp = Math.min(G.maxHp, G.hp + 5);
+    log('🐉 Dragon vitality: +5 HP from slow movement.', 'li-heal');
+    healFlash();
+  }
+  if (G.meditating > 0) {
+    G.hp = Math.min(G.maxHp, G.hp + 15);
+    G.meditating--;
+    log(`🧘 Meditate regen: +15 HP. (${G.meditating} turns left)`, 'li-heal');
+    healFlash();
+  }
+  const newPos = Math.min(G.position + roll, 24);
+  G.position = newPos;
+  NODES[newPos].visited = true;
+  G.turn++; G.score += 8;
+  moveCameraTo(NODES[newPos]);
+  updateHUD(); updateLifeButtons();
+  if (G.turn > G.turnLimit && G.mode !== 'spirit') {
+    setTimeout(() => openModal('THE LAST PETAL FALLS','— FATE —','🌑',
+      'Time has run out. The Soul Tree\'s final petal drops into the void.',
+      'When time expires, the bravest Keeper cannot hold back fate.',
+      [{label:'Accept the End', cls:'btn-danger', act:'gameover'}]
+    ), 600);
     return;
   }
-  setTimeout(()=>triggerNode(newPos),600);
+  if (G.mode === 'spirit' && G.turn % 5 === 0) {
+    G.soulsSaved++; G.score += 60;
+    log(`🕯️ Your vigil saves another soul. ${G.soulsSaved} souls returned!`, 'li-special');
+    if (G.turn >= G.turnLimit) { G.objectives[0].done = true; renderObjectives(); setTimeout(triggerWin, 600); return; }
+  }
+  setTimeout(() => triggerNode(newPos), 700);
 }
 
-// ============================
-// NODE EVENTS
-// ============================
-const ONI_ENCOUNTERS=[
-  {name:'Kage-Oni',jp:'影鬼',art:'👺',desc:'A shadow demon that feeds on memories. It tears at your mind with cold, invisible claws. You feel yourself forgetting — your mother\'s face, your village\'s scent. Fight before it steals more.',hint:'Rolling 4+ defeats it. Kenshi gets +1 to their roll.'},
-  {name:'Mugen\'s Shade',jp:'無限の影',art:'🩸',desc:'A fragment of the Endless Demon itself. Its eyes are the color of grief. You can feel it probing your fear. It whispers: "She is already gone. Lay down your dice. Rest forever."',hint:'Don\'t believe what it says. Fight or flee — both have consequences.'},
-  {name:'Bone Lantern',jp:'骨提灯',art:'🏮',desc:'What was once a beautiful spirit lantern has been corrupted. It floats toward you, grinning. Inside its flame is a trapped human soul — screaming silently. Defeat it to free the soul.',hint:'Defeating this Oni saves a soul and increases your score significantly.'},
-];
-
-const CHEST_EVENTS=[
-  {name:'Memory Chest',jp:'記憶の箱',art:'📦',desc:'A wooden chest wrapped in faded ribbon. Inside is warm to the touch — as if it remembers the hands that once held it. The Goddess left these for her faithful.',hint:'Force open for speed; examine carefully to avoid traps.'},
-  {name:'The Goddess\'s Gift',jp:'女神の贈り物',art:'🎁',desc:'A box that smells of cherry blossoms and rain. You feel an ache in your chest — not pain, but longing. Something inside loves you, though you\'ve never met.',hint:'These chests are always safe. They are her way of saying thank you.'},
-];
-
-const SCROLL_EVENTS=[
-  {name:'Ancient Scroll',jp:'古代の巻物',art:'📜',desc:'"When the Keeper rolls true and the cherry blooms again, I will open my eyes. Do not mourn me — I am in every petal that falls. I will always find you." — Yūrei-no-Hana',hint:'Scrolls restore 10 HP and grant 40 soul points. Always read them.'},
-  {name:'The Goddess\'s Letter',jp:'女神の手紙',art:'📖',desc:'"Mugen was my student once. I taught him to tend the souls of the dead — to be gentle with them. He grew jealous of their love for me. When love becomes possession, it becomes a cage. Free me... and forgive him."',hint:'Every scroll piece you find reveals more of her story. Find all 5 for the true ending.'},
-];
-
-const SHRINE_EVENTS=[
-  {name:'Forgotten Shrine',jp:'忘れられた神社',art:'⛩️',desc:'Moss-covered stone. An old offering bowl filled with long-dried flowers. Someone prayed here for a very long time. You add your prayer. Something warm answers.',hint:'Shrines heal 20-30 HP. Always stop to pray — even if you don\'t believe.'},
-  {name:'Weeping Shrine',jp:'泣く神社',art:'🕯️',desc:'You find a shrine where a child\'s toy rests against the stone. A child who never came home from the Night of Fallen Petals. You light the candle that\'s been waiting years.',hint:'Praying here adds +1 to your next combat roll and grants Light karma.'},
-];
-
-const RELIC_EVENTS=[
-  {name:'The Bell of Parting',jp:'別れの鐘',art:'🔔',desc:'A small bronze bell. When you ring it, it produces a sound so achingly beautiful that you stop breathing for a moment. The note hangs in the air like a goodbye that never finished.',hint:'This is a sacred relic. Collect it for your mission — and your heart.'},
-  {name:'The Mirror of Souls',jp:'魂の鏡',art:'🪞',desc:'You look into it expecting your reflection. Instead you see the Goddess — thin, transparent, imprisoned in chains of shadow. She mouths two words: "Hurry. Please."',hint:'This relic grants a significant score bonus and reveals a story fragment.'},
-];
-
+// ─── NODE EVENTS ───
 function triggerNode(pos) {
-  const node=MAP_NODES[pos];
-  const t=node.type;
-  state.pending=true;
-
-  if(t==='start'){ state.pending=false; return; }
-  if(t==='exit'){
-    if(checkWinCondition()){triggerWin(); return;}
-    addLog('🌸 You find the Soul Gate, but your mission is not yet complete.','neutral');
-    state.pending=false; return;
+  const node = NODES[pos];
+  const t = node.type;
+  G.pending = true;
+  if (t === 'start') { G.pending = false; return; }
+  if (t === 'exit') {
+    if (checkWin()) { triggerWin(); return; }
+    log('🌸 Soul Gate found — mission incomplete.', 'li-spirit');
+    G.pending = false; return;
   }
-
-  if(state.purifyNext && (t==='curse'||t==='oni')){
-    state.purifyNext=false;
-    addLog('⛩️ Purification activated! The Miko\'s prayer cleanses the corruption.','good');
-    state.score+=50; state.karma+=15;
-    node.cleared=true; state.pending=false;
-    updateStats(); renderMap(); return;
+  if (G.purifyNext && (t === 'curse' || t === 'oni')) {
+    G.purifyNext = false; node.cleared = true;
+    G.score += 50; G.karma += 15;
+    log('⛩️ Miko purification! Corruption cleansed.', 'li-good');
+    G.pending = false; updateHUD(); return;
   }
-
-  switch(t) {
-    case 'oni':     showOniEvent(); break;
-    case 'chest':   showChestEvent(); break;
-    case 'shrine':  showShrineEvent(); break;
-    case 'portal':  showPortalEvent(); break;
-    case 'curse':   showCurseEvent(); break;
-    case 'scroll':  showScrollEvent(); break;
-    case 'relic':   showRelicEvent(); break;
-    default:        showNormalEvent(); break;
-  }
+  const dispatch = { oni:showOni, chest:showChest, shrine:showShrine, portal:showPortal,
+    curse:showCurse, scroll:showScroll, relic:showRelic, heal:showHealNode };
+  (dispatch[t] || showNormal)();
 }
 
-function showOniEvent() {
-  const e=ONI_ENCOUNTERS[Math.floor(Math.random()*ONI_ENCOUNTERS.length)];
-  const actions=[
-    {label:'⚔️ Fight with Honor', cls:'btn-danger', act:'fight-honor'},
-    {label:'🏃 Flee into Shadow', cls:'btn',         act:'flee'},
+const ONI_DATA = [
+  {n:'Kage-Oni',jp:'影鬼',art:'👺',d:'A shadow demon that feeds on memories. You feel your mother\'s face blurring at the edges of your mind.',h:'Roll 3+ to win. Kenshi gets +1. Slay it to save a soul.'},
+  {n:'Mugen\'s Shade',jp:'無限の影',art:'🩸',d:'A fragment of the Endless Demon. It whispers: "She is already gone." Do not believe it.',h:'Never trust Mugen\'s Shade. Fight or flee — both have consequences.'},
+  {n:'Bone Lantern',jp:'骨提灯',art:'🏮',d:'A corrupted spirit lantern. Inside its flame is a trapped human soul — screaming silently. Defeat it to free the soul.',h:'Defeating this Oni saves a soul and adds +80 pts bonus.'},
+];
+const CHEST_DATA = [
+  {n:'Memory Chest',jp:'記憶の箱',art:'📦',d:'A chest warm to the touch — as if it remembers the hands that last held it.',h:'Force open for speed. Examine carefully to avoid traps.'},
+  {n:'The Goddess\'s Gift',jp:'女神の贈り物',art:'🎁',d:'A box that smells of cherry blossoms and rain. You feel longing in your chest — not pain, but love.',h:'These chests are always safe. They are her way of saying thank you.'},
+];
+const SCROLL_DATA = [
+  {n:'Ancient Scroll',jp:'古代の巻物',art:'📜',d:'"When the Keeper rolls true and the cherry blooms again, I will open my eyes." — Yūrei-no-Hana',h:'Scrolls restore 10 HP and grant 40 soul points.'},
+  {n:'The Goddess\'s Letter',jp:'女神の手紙',art:'📖',d:'"Mugen was my student once. When love becomes possession, it becomes a cage. Free me... and forgive him."',h:'Collect all scrolls for the true ending.'},
+];
+const SHRINE_DATA = [
+  {n:'Forgotten Shrine',jp:'忘れられた神社',art:'⛩️',d:'Moss-covered stone. An old offering bowl with long-dried flowers. You add your prayer. Something warm answers.',h:'Shrines heal 20-30 HP and reset Shrine Prayer cooldown.'},
+  {n:'Weeping Shrine',jp:'泣く神社',art:'🕯️',d:'A child\'s toy rests against the stone — a child who never came home from the Night of Fallen Petals.',h:'Praying adds Light karma and +1 to your next combat roll.'},
+];
+const RELIC_DATA = [
+  {n:'The Bell of Parting',jp:'別れの鐘',art:'🔔',d:'A small bronze bell. Its sound is so achingly beautiful that you stop breathing for a moment.',h:'Sacred relic. Collect for your mission.'},
+  {n:'The Mirror of Souls',jp:'魂の鏡',art:'🪞',d:'You look expecting your reflection. Instead you see the Goddess — chained in shadow. She mouths: "Hurry. Please."',h:'Grants major score bonus and reveals a story fragment.'},
+];
+
+function showOni() {
+  const e = ONI_DATA[~~(Math.random()*ONI_DATA.length)];
+  const acts = [
+    {label:'⚔️ Fight with Honor', cls:'btn-danger', act:'fight'},
+    {label:'🏃 Flee into Shadow', cls:'btn',         act:'flee'}
   ];
-  if(state.playerClass==='miko') actions.push({label:'⛩️ Pray for Mercy',cls:'btn-teal',act:'fight-prayer'});
+  if (G.cls==='miko') acts.push({label:'⛩️ Sacred Prayer', cls:'btn-teal', act:'prayer-fight'});
+  if (G.cls==='kitsune') acts.push({label:'🦊 Illusion Trick', cls:'btn-spirit', act:'trick'});
   playSound('oni');
-  showEncounter(e.name, e.jp, e.art, e.desc, e.hint, actions);
+  openModal(e.n, e.jp, e.art, e.d, e.h, acts);
 }
-
-function showChestEvent() {
-  const e=CHEST_EVENTS[Math.floor(Math.random()*CHEST_EVENTS.length)];
-  const actions=[
-    {label:'📦 Open with Hope', cls:'btn-gold', act:'chest-open'},
-    {label:'🔍 Examine Carefully', cls:'btn',   act:'chest-safe'},
-  ];
+function showChest() {
+  const e = CHEST_DATA[~~(Math.random()*CHEST_DATA.length)];
   playSound('chest');
-  showEncounter(e.name, e.jp, e.art, e.desc, e.hint, actions);
-}
-
-function showShrineEvent() {
-  const e=SHRINE_EVENTS[Math.floor(Math.random()*SHRINE_EVENTS.length)];
-  showEncounter(e.name, e.jp, e.art, e.desc, e.hint, [
-    {label:'🙏 Pray and Offer', cls:'btn-teal', act:'shrine'},
-    {label:'→ Pass by', cls:'btn', act:'close', pts:0},
+  openModal(e.n, e.jp, e.art, e.d, e.h, [
+    {label:'📦 Open with Hope', cls:'btn-gold', act:'chest-force'},
+    {label:'🔍 Examine Carefully', cls:'btn', act:'chest-safe'},
   ]);
+}
+function showShrine() {
+  const e = SHRINE_DATA[~~(Math.random()*SHRINE_DATA.length)];
   playSound('shrine');
+  openModal(e.n, e.jp, e.art, e.d, e.h, [
+    {label:'🙏 Pray and Offer', cls:'btn-teal', act:'shrine'},
+    {label:'→ Pass By', cls:'btn', act:'close', pts:0},
+  ]);
 }
-
-function showPortalEvent() {
-  showEncounter('Spirit Portal','精神ポータル','🌀',
-    'A swirling gate of violet light opens before you. The wind that flows from it carries the scent of a world that no longer exists — ancient forests, temple bells, incense and starlight. The Goddess once walked through a door just like this.',
-    'Portals move you 2–6 nodes forward or backward. In the spirit realm, not all roads go where you expect.',
-    [{label:'🌀 Step Through',cls:'btn-spirit',act:'portal'},{label:'← Turn Back',cls:'btn',act:'close',pts:5}]);
+function showPortal() {
+  playSound('portal');
+  openModal('Spirit Portal','精神ポータル','🌀',
+    'A swirling gate of violet light tears open reality. The wind carries the scent of ancient forests, temple bells, and starlight.',
+    'Portals can jump you 2-6 nodes forward OR backward.',
+    [{label:'🌀 Step Through',cls:'btn-spirit',act:'portal'},{label:'← Turn Back',cls:'btn',act:'close',pts:5}]
+  );
 }
-
-function showCurseEvent() {
-  showEncounter('Cursed Hex','呪われた呪文','💀',
-    'A dark symbol burns into the ground beneath your feet. The air turns cold. You feel fingers wrapping around your heart — not to stop it, but to slow it. This tile was laid by Mugen-Oni himself.',
-    'Cursed tiles deal 15-25 damage. Miko can purify these. Ryuujin takes only 10.',
-    [{label:'⚡ Push Through',cls:'btn-danger',act:'curse'},{label:'⚔️ Resist Actively',cls:'btn',act:'curse-resist'}]);
+function showCurse() {
   playSound('curse');
+  openModal('Cursed Hex','呪われた呪文','💀',
+    'A dark symbol burns into the ground beneath your feet. The air turns cold. Mugen-Oni laid this tile himself.',
+    'Cursed tiles: 15-25 damage. Ryuujin takes only 10. Miko can purify these entirely.',
+    [{label:'⚡ Push Through', cls:'btn-danger', act:'curse'},
+     {label:'⚔️ Resist Actively', cls:'btn', act:'curse-resist'}]
+  );
 }
-
-function showScrollEvent() {
-  const e=SCROLL_EVENTS[Math.floor(Math.random()*SCROLL_EVENTS.length)];
-  showEncounter(e.name, e.jp, e.art, e.desc, e.hint,
-    [{label:'📜 Read with Care', cls:'btn-gold', act:'scroll'}]);
+function showScroll() {
+  const e = SCROLL_DATA[~~(Math.random()*SCROLL_DATA.length)];
   playSound('scroll');
+  openModal(e.n, e.jp, e.art, e.d, e.h, [{label:'📜 Read with Care', cls:'btn-gold', act:'scroll'}]);
 }
-
-function showRelicEvent() {
-  const e=RELIC_EVENTS[Math.floor(Math.random()*RELIC_EVENTS.length)];
-  showEncounter(e.name, e.jp, e.art, e.desc, e.hint,
-    [{label:'⚱️ Collect the Relic', cls:'btn-gold', act:'relic'}]);
+function showRelic() {
+  const e = RELIC_DATA[~~(Math.random()*RELIC_DATA.length)];
   playSound('chest');
+  openModal(e.n, e.jp, e.art, e.d, e.h, [{label:'⚱️ Collect the Relic', cls:'btn-gold', act:'relic'}]);
 }
-
-function showNormalEvent() {
-  const normals=[
-    {t:'Drifting Soul',jp:'漂う魂',art:'👻',d:'A transparent figure drifts past you — a soul untethered since the Night of Fallen Petals. It reaches toward you but cannot touch. Its eyes hold a question it has forgotten how to ask.',h:'Lost souls sometimes leave items behind. Search the area.'},
-    {t:'Cherry Blossom Storm',jp:'桜吹雪',art:'🌸',d:'A sudden gust of wind fills the air with sakura petals. For a moment — just a moment — you feel the Soul Tree breathing. As if it knows you are coming. As if it is holding on for you.',h:'This is a rest tile. Safe to pass through. Restore your resolve.'},
-    {t:'Moonlit Path',jp:'月明かりの道',art:'🌕',d:'The path ahead glows silver under an impossibly large moon. Somewhere far away, a temple bell rings — three times, then silence. You take a breath. You keep going.',h:'No danger here. Take a moment. You are doing better than you think.'},
+function showHealNode() {
+  playSound('heal');
+  openModal('Sacred Healing Spring','癒しの泉','💊',
+    'A crystal-clear spring bubbles up from the spirit realm floor, glowing softly in teal light. It is calling to you.',
+    'Healing Springs restore 30 HP regardless of class.',
+    [{label:'💊 Drink from the Spring', cls:'btn-teal', act:'heal-node'}]
+  );
+}
+function showNormal() {
+  const normals = [
+    {n:'Drifting Soul',jp:'漂う魂',art:'👻',d:'A transparent figure drifts past — untethered since the Night of Fallen Petals. Its eyes hold a question it has forgotten how to ask.',h:'Lost souls sometimes leave items. Search the area.'},
+    {n:'Cherry Blossom Storm',jp:'桜吹雪',art:'🌸',d:'Sakura petals fill the air. For a moment you feel the Soul Tree breathing. As if it knows you are coming.',h:'Safe rest tile. You are doing better than you think.'},
+    {n:'Moonlit Path',jp:'月明かりの道',art:'🌕',d:'The path glows silver under an impossibly large moon. A temple bell rings — three times, then silence.',h:'No danger here. Every step forward matters.'},
   ];
-  const e=normals[Math.floor(Math.random()*normals.length)];
-  showEncounter(e.t, e.jp, e.art, e.d, e.h, [{label:'Continue Forward',cls:'btn',act:'close',pts:15}]);
+  const e = normals[~~(Math.random()*normals.length)];
+  openModal(e.n, e.jp, e.art, e.d, e.h, [{label:'Continue Forward', cls:'btn', act:'close', pts:15}]);
 }
 
-// ============================
-// ENCOUNTER MODAL
-// ============================
-function showEncounter(title, jp, art, desc, hint, actions) {
-  document.getElementById('modal-title').textContent = title;
-  document.getElementById('modal-jp').textContent = jp;
-  document.getElementById('modal-art').textContent = art;
-  document.getElementById('modal-desc').innerHTML = desc;
-  document.getElementById('modal-hint-text').textContent = hint;
-  const acts = document.getElementById('modal-actions');
-  acts.innerHTML='';
-  actions.forEach(a=>{
-    const b=document.createElement('button');
-    b.className='btn '+(a.cls||'');
-    b.textContent=a.label;
-    b.onclick=()=>resolveAction(a);
-    acts.appendChild(b);
+function openModal(title, jp, art, desc, hint, actions) {
+  document.getElementById('m-badge').textContent = '— ' + (jp || 'EVENT') + ' —';
+  document.getElementById('m-title').textContent = title;
+  document.getElementById('m-jp').textContent = jp;
+  document.getElementById('m-art').textContent = art;
+  document.getElementById('m-desc').innerHTML = desc;
+  document.getElementById('m-hint').textContent = hint;
+  const ac = document.getElementById('m-acts');
+  ac.innerHTML = '';
+  actions.forEach(a => {
+    const b = document.createElement('button');
+    b.className = 'btn ' + (a.cls||'');
+    b.textContent = a.label;
+    b.onclick = () => resolve(a);
+    ac.appendChild(b);
   });
-  document.getElementById('modal-overlay').style.display='flex';
+  document.getElementById('modal').classList.add('open');
 }
+function closeModal() { document.getElementById('modal').classList.remove('open'); G.pending = false; }
 
-function closeModal(){ document.getElementById('modal-overlay').style.display='none'; state.pending=false; }
-
-function resolveAction(a) {
+function resolve(a) {
   closeModal();
-  MAP_NODES[state.position].cleared=true;
-
+  NODES[G.position].cleared = true;
   switch(a.act) {
     case 'close':
-      if(a.pts){ state.score+=a.pts; addLog(`You press onward. +${a.pts} soul points.`,'neutral'); }
-      else addLog('You move on through the spirit realm.','neutral');
+      if (a.pts) { G.score += a.pts; log(`You press onward. +${a.pts} soul points.`, 'li-spirit'); }
+      else log('You move on through the spirit realm.', 'li-spirit');
       break;
-
-    case 'fight-honor': {
-      const roll=Math.ceil(Math.random()*6);
-      const bonus=state.playerClass==='kenshi'?1:0;
-      const critical=state.playerClass==='kenshi'&&(roll+bonus>=5);
-      if(roll+bonus>=3) {
-        const pts=critical?150:80+roll*15;
-        state.kills++; state.score+=pts; state.karma+=10; state.soulsSaved++;
-        addLog(`⚔️ Victory! Roll: ${roll}${bonus?'+1':''}.${critical?' CRITICAL STRIKE!':''} +${pts} pts. A soul freed!`,'good');
-        checkBondProgress();
-        playSound('win');
+    case 'fight': {
+      const roll = Math.ceil(Math.random()*6);
+      const bonus = G.cls==='kenshi' ? 1 : 0;
+      const crit = G.cls==='kenshi' && (roll+bonus)>=5;
+      if (roll+bonus >= 3) {
+        const pts = crit ? 200 : 80+roll*15;
+        G.kills++; G.score+=pts; G.karma+=10; G.soulsSaved++;
+        log(`⚔️ Victory! Roll:${roll}${bonus?'+1':''}.${crit?' CRITICAL!':''} +${pts}pts.`, 'li-good');
+        checkBondProgress(); playSound('win');
       } else {
-        const dmg=Math.floor(Math.random()*20)+15;
-        state.hp-=dmg; state.karma-=5;
-        addLog(`💔 Defeated by the Oni. -${dmg} HP. Your hp: ${state.hp}.`,'bad');
+        const dmg = ~~(Math.random()*20)+15;
+        G.hp-=dmg; G.karma-=5;
+        log(`💔 Defeated. -${dmg} HP remaining: ${G.hp}.`, 'li-bad');
         playSound('hurt'); checkDead();
       }
       break;
     }
-    case 'fight-prayer': {
-      const roll=Math.ceil(Math.random()*6)+1;
-      if(roll>=3){
-        state.kills++; state.score+=90; state.karma+=20; state.soulsSaved++;
-        addLog('⛩️ Sacred prayer banishes the Oni! +90 pts. +20 Light Karma.','good');
-        checkBondProgress();
-      } else {
-        state.hp-=10; addLog('🙏 The prayer weakened it but could not banish it. -10 HP.','bad');
-      }
+    case 'prayer-fight': {
+      const roll = Math.ceil(Math.random()*6)+1;
+      if (roll>=3) { G.kills++; G.score+=100; G.karma+=20; G.soulsSaved++; log('⛩️ Sacred prayer banishes the Oni! +100 pts.', 'li-good'); checkBondProgress(); }
+      else { G.hp-=10; log('🙏 Prayer weakened it but failed. -10 HP.', 'li-bad'); checkDead(); }
+      break;
+    }
+    case 'trick': {
+      const roll = Math.ceil(Math.random()*6);
+      if (roll>=3) { G.score+=90; G.karma+=5; log('🦊 Illusion trick works! +90 pts.', 'li-good'); }
+      else { G.hp-=8; log('🦊 The trick failed. -8 HP.', 'li-bad'); checkDead(); }
       break;
     }
     case 'flee': {
-      const dmg=Math.floor(Math.random()*12)+5;
-      state.hp-=dmg; state.karma-=8; state.score+=10;
-      addLog(`🏃 You flee the Oni. -${dmg} HP, -8 Karma. The village remembers nothing.`,'bad');
+      const dmg = ~~(Math.random()*12)+5;
+      G.hp-=dmg; G.karma-=8; G.score+=10;
+      log(`🏃 Fled! -${dmg} HP. Karma suffers.`, 'li-bad');
       checkDead(); break;
     }
-
-    case 'chest-open': {
-      const lucky=Math.random();
-      if(lucky>0.2){ giveItem(); state.chestOpened=(state.chestOpened||0)+1; state.score+=80; addLog('📦 The chest was filled with warmth. Loot acquired! +80 pts.','special'); playSound('loot'); }
-      else { const dmg=18; state.hp-=dmg; addLog(`💥 Trap chest! -${dmg} HP. The Oni knew you were coming.`,'bad'); checkDead(); }
+    case 'chest-force': {
+      if (Math.random()>0.22) { giveItem(); G.score+=80; log('📦 Chest opened — loot acquired! +80 pts.', 'li-special'); playSound('loot'); }
+      else { const d=18; G.hp-=d; log(`💥 Trap! -${d} HP.`, 'li-bad'); checkDead(); }
       break;
     }
     case 'chest-safe': {
-      giveItem(); state.score+=60; addLog('📦 Examined safely. Loot acquired. +60 pts.','special'); playSound('loot'); break;
+      giveItem(); G.score+=60; log('📦 Examined safely. +60 pts.', 'li-special'); playSound('loot'); break;
     }
-
     case 'shrine': {
-      const heal=state.karma>=0?25:15;
-      state.hp=Math.min(state.maxHp,state.hp+heal);
-      state.karma+=12; state.shrines++; state.score+=50;
-      const combatBonus=state.karma>0;
-      addLog(`⛩️ Prayers answered. +${heal} HP restored. +12 Light Karma.${combatBonus?' Next combat: +1 roll bonus.':''}`,'good');
-      playSound('shrine'); break;
+      const base = G.karma >= 0 ? 25 : 15;
+      const bonus = G.cls === 'miko' ? 10 : 0;
+      const heal = base + bonus;
+      G.hp = Math.min(G.maxHp, G.hp + heal);
+      G.karma+=12; G.shrines++; G.score+=50;
+      RECOVERY.prayer.last = G.turn - RECOVERY.prayer.cooldown - 1;
+      log(`⛩️ Prayers answered. +${heal} HP. Shrine Prayer reset!`, 'li-heal');
+      healFlash(); playSound('shrine'); break;
     }
-
     case 'portal': {
-      const jump=(Math.random()>0.3?1:-1)*(Math.floor(Math.random()*4)+2);
-      const newPos=Math.max(0,Math.min(24,state.position+jump));
-      state.position=newPos; MAP_NODES[newPos].visited=true;
-      state.portals++; state.score+=35;
-      addLog(`🌀 The portal carries you ${Math.abs(jump)} nodes ${jump>0?'forward':'backward'}. +35 pts.`,jump>0?'good':'neutral');
-      renderMap(); break;
+      const dir = Math.random()>0.3 ? 1 : -1;
+      const jump = dir*(~~(Math.random()*4)+2);
+      const np = Math.max(0, Math.min(24, G.position+jump));
+      G.position=np; NODES[np].visited=true;
+      G.portals++; G.score+=35;
+      moveCameraTo(NODES[np]);
+      log(`🌀 Portal! ${Math.abs(jump)} nodes ${jump>0?'forward':'backward'}. +35 pts.`, jump>0?'li-good':'li-spirit');
+      break;
     }
-
     case 'curse': {
-      const dmg=state.playerClass==='ryuujin'?10:Math.floor(Math.random()*10)+15;
-      state.hp-=dmg; state.karma-=5;
-      addLog(`💀 The curse bites deep. -${dmg} HP. Mugen's mark is on you.`,'bad');
+      const dmg = G.cls==='ryuujin' ? 10 : ~~(Math.random()*10)+15;
+      G.hp-=dmg; G.karma-=5;
+      log(`💀 Curse strikes! -${dmg} HP.`, 'li-bad');
       checkDead(); break;
     }
     case 'curse-resist': {
-      const roll=Math.ceil(Math.random()*6);
-      const dmg=roll>=4? 5 : (state.playerClass==='ryuujin'?10:18);
-      state.hp-=dmg; state.score+=20;
-      addLog(`💪 You resist the hex. Roll: ${roll}. -${dmg} HP. +20 pts for your courage.`,roll>=4?'good':'bad');
+      const roll = Math.ceil(Math.random()*6);
+      const dmg = roll>=4 ? 5 : (G.cls==='ryuujin'?10:18);
+      G.hp-=dmg; G.score+=20;
+      log(`💪 Resist! Roll:${roll}. -${dmg} HP. +20 pts.`, roll>=4?'li-good':'li-bad');
       checkDead(); break;
     }
-
     case 'scroll': {
-      const heal=10; state.hp=Math.min(state.maxHp,state.hp+heal);
-      state.score+=40; state.karma+=8;
-      addLog(`📜 Her words heal your spirit. +${heal} HP, +40 pts, +8 Light Karma.`,'spirit-log');
-      break;
+      G.hp = Math.min(G.maxHp, G.hp+10);
+      G.score+=40; G.karma+=8;
+      log('📜 Her words heal your spirit. +10 HP, +40 pts.', 'li-spirit');
+      healFlash(); break;
     }
-
     case 'relic': {
-      state.relicsFound++;
-      const relicItems=[
+      G.relicsFound++;
+      const relics=[
         {icon:'🔔',name:'Bell of Parting'},{icon:'🪞',name:'Mirror of Souls'},
         {icon:'🪭',name:'Fan of Winds'},{icon:'⚱️',name:'Soul Urn'},
-        {icon:'🪬',name:'Spirit Talisman'},
+        {icon:'🪬',name:'Spirit Talisman'}
       ];
-      const ritem=relicItems[state.relicsFound-1]||relicItems[0];
-      if(state.inventory.length<8) state.inventory.push(ritem);
-      state.score+=150;
-      if(state.gameMode==='relic'&&state.relicsFound<=5){
-        state.objectives[state.relicsFound-1].done=true;
-        addLog(`⚱️ Relic ${state.relicsFound}/5 collected: ${ritem.name}! +150 pts.`,'special');
-        if(state.relicsFound>=5){setTimeout(triggerWin,600); return;}
+      const it = relics[(G.relicsFound-1) % relics.length];
+      if (G.inventory.length<8) G.inventory.push(it);
+      G.score+=150;
+      if (G.mode==='relic' && G.relicsFound<=5) {
+        G.objectives[G.relicsFound-1].done=true;
+        log(`⚱️ Relic ${G.relicsFound}/5: ${it.name}! +150 pts.`, 'li-special');
+        renderObjectives();
+        if (G.relicsFound>=5) { setTimeout(triggerWin,600); return; }
       } else {
-        addLog(`⚱️ Sacred relic found: ${ritem.name}! +150 pts.`,'special');
+        log(`⚱️ Relic: ${it.name}! +150 pts.`, 'li-special');
       }
-      renderObjectives(); renderInventory(); break;
+      break;
     }
-
-    case 'gameover': triggerGameOver(); return;
+    case 'heal-node': {
+      G.hp = Math.min(G.maxHp, G.hp+30);
+      G.score+=30;
+      log('💊 Sacred Spring! +30 HP! +30 pts.', 'li-heal');
+      healFlash(); playSound('heal'); break;
+    }
+    case 'gameover': triggerLose(); return;
   }
-
-  // Spirit vigil — every 5 turns save a soul
-  if(state.gameMode==='spirit'&&state.turn%5===0){
-    state.soulsSaved++; state.score+=60;
-    addLog(`🕯️ Your vigil saves another soul from the void. ${state.soulsSaved} souls returned!`,'spirit-log');
+  updateHUD(); updateLifeButtons(); renderObjectives(); buildActionBtns();
+  if (G.mode==='spirit' && G.turn>=G.turnLimit) {
+    G.objectives[0].done=true; renderObjectives(); setTimeout(triggerWin,600);
   }
-
-  // Check survival win
-  if(state.gameMode==='spirit'&&state.turn>=state.turnLimit){
-    state.objectives[0].done=true; renderObjectives();
-    setTimeout(triggerWin,600); return;
-  }
-
-  updateStats(); renderInventory(); renderObjectives(); renderRerolls(); renderMap();
 }
 
 function checkBondProgress() {
-  if(state.gameMode!=='bond') return;
-  if(state.kills>=1&&!state.objectives[0].done){ state.objectives[0].done=true; state.soulFragments++; addLog('🌸 Fragment of Memory recovered! She remembers your face.','spirit-log'); }
-  if(state.kills>=3&&!state.objectives[1].done){ state.objectives[1].done=true; state.soulFragments++; addLog('🌸 Fragment of Love recovered! She remembers what warmth feels like.','spirit-log'); }
-  renderObjectives(); updateStats();
+  if (G.mode!=='bond') return;
+  if (G.kills>=1 && !G.objectives[0].done) { G.objectives[0].done=true; G.soulFragments++; log('🌸 Fragment of Memory recovered!','li-special'); }
+  if (G.kills>=3 && !G.objectives[1].done) { G.objectives[1].done=true; G.soulFragments++; log('🌸 Fragment of Love recovered!','li-special'); }
+  renderObjectives();
 }
-
-function checkWinCondition() {
-  if(state.gameMode==='bond') return state.soulFragments>=2;
-  if(state.gameMode==='relic') return state.relicsFound>=5;
-  if(state.gameMode==='spirit') return state.turn>=state.turnLimit;
+function checkWin() {
+  if (G.mode==='bond')   return G.soulFragments>=2;
+  if (G.mode==='relic')  return G.relicsFound>=5;
+  if (G.mode==='spirit') return G.turn>=G.turnLimit;
   return false;
 }
-
 function giveItem() {
-  const items=[
+  const pool=[
     {icon:'💊',name:'Spirit Herb'},{icon:'⚡',name:'Ki Stone'},
     {icon:'🛡️',name:'Jade Armor'},{icon:'🌸',name:'Soul Petal'},
     {icon:'🔮',name:'Void Bead'},{icon:'🎋',name:'Bamboo Ward'},
     {icon:'🧧',name:'Lucky Charm'},{icon:'🕯️',name:'Vigil Candle'},
   ];
-  const item=items[Math.floor(Math.random()*items.length)];
-  if(['Spirit Herb','Ki Stone'].includes(item.name)){
-    const heal=item.name==='Spirit Herb'?18:10;
-    state.hp=Math.min(state.maxHp,state.hp+heal);
-    addLog(`💊 ${item.name} restores ${heal} HP.`,'good');
+  const it = pool[~~(Math.random()*pool.length)];
+  if (['Spirit Herb','Ki Stone'].includes(it.name)) {
+    const h=it.name==='Spirit Herb'?18:10;
+    G.hp=Math.min(G.maxHp,G.hp+h);
+    log(`💊 ${it.name} found — +${h} HP!`,'li-heal');
+    healFlash();
   }
-  if(state.inventory.length<8) state.inventory.push(item);
+  if (G.inventory.length<8) G.inventory.push(it);
 }
-
 function checkDead() {
-  updateStats();
-  if(state.hp<=0){ state.hp=0; state.gameOver=true; setTimeout(triggerGameOver,900); }
+  updateHUD();
+  if (G.hp<=0) { G.hp=0; G.gameOver=true; updateHUD(); setTimeout(triggerLose,900); }
 }
 
-// ============================
 // WIN / LOSE
-// ============================
-const WIN_EPILOGUE = `<p>As your final action sends the last fragment of her spirit free, the sky above the spirit realm cracks open like an old wound finally allowed to heal.</p>
-<br><p>The Soul Tree — grey and leafless for three long years — exhales. A single petal unfurls. Then another. Then a thousand. Then a million — all at once, like a held breath finally released.</p>
-<br><p>You hear her voice for the first time. It sounds like something you have always known but never found the word for. She says your name — your real name, the one written in the bark of the Soul Tree long before you were born.</p>
-<br><p><em>"You came,"</em> she says. <em>"I was not sure anyone would."</em></p>
-<br><p>Every soul that Mugen had swallowed returns — not as ghosts, but as light. They land on rooftops and in open palms and in the empty places in people's chests. Children wake from their long sleep. Elders draw breath. The lanterns relight themselves.</p>
-<br><p>And you — the Tamashii-Keeper, the last one marked — sit down beneath the blooming Soul Tree, and for the first time in this journey, you feel something you had almost forgotten the shape of.</p>
-<br><p style="color:var(--sakura);font-style:italic;text-align:center;">You feel at home.</p>`;
+const WIN_EPI = `<p>As your final action sends the last fragment of her spirit free, the sky cracks open like an old wound finally allowed to heal.</p>
+<p>The Soul Tree — grey and leafless for three long years — exhales. A single petal unfurls. Then another. Then a million — all at once, like a held breath finally released.</p>
+<p>You hear her voice for the first time. It sounds like something you have always known but never found the word for. She says your name — your real name, the one written in the bark of the Soul Tree long before you were born.</p>
+<p><em>"You came,"</em> she says. <em>"I was not sure anyone would."</em></p>
+<p>Every soul that Mugen had swallowed returns — not as ghosts, but as light. Children wake from their long sleep. The lanterns relight themselves.</p>
+<p style="color:#ffb7c5;font-style:italic;text-align:center;">You feel, for the first time, at home.</p>`;
 
-const GAMEOVER_WHAT_HAPPENS = `<p>Without the Tamashii-Keeper, the Soul Tree's last leaf falls at dawn on the third day.</p>
-<br><p>People do not die dramatically. They simply... thin. Their laughter becomes quieter. Their memories shorter. A grandmother forgets her grandchild's name — not cruelly, but gently, like sand through open fingers.</p>
-<br><p>The Goddess remains imprisoned inside Mugen-Oni. He grows enormous — not with joy, but with the hollow fullness of something that consumes without ever being satisfied. He does not gloat. He does not celebrate. He simply <em>is</em> — an endless, hungry dark where a god of love used to stand.</p>
-<br><p>The lanterns no longer float into the sky each autumn. No one is sure why the tradition stopped. They just... stopped making them.</p>
-<br><p>And somewhere, in the last intact corner of the spirit realm, a small wooden shrine stands untended. Its offering bowl is empty. Its candle has been cold for a very long time. On the stone, barely legible, someone once carved four words in ancient script:</p>
-<br><p style="color:var(--sakura);font-style:italic;text-align:center;font-size:1.1rem;">"Please. Someone. Come."</p>
-<br><p style="opacity:0.5;font-style:italic;text-align:center;">The dice remain on the table. They can be rolled again.</p>`;
+const LOSE_EPI = `<p>Without the Tamashii-Keeper, the Soul Tree's last leaf falls at dawn on the third day.</p>
+<p>People do not die dramatically. They simply thin. Their laughter becomes quieter. Their memories shorter.</p>
+<p style="color:#ffb7c5;font-style:italic;text-align:center;font-size:1rem;">"Please. Someone. Come."</p>
+<p style="opacity:0.4;font-style:italic;text-align:center;">The dice remain on the table. They can be rolled again.</p>`;
 
 function triggerWin() {
-  state.gameOver=true;
-  const bonus=state.hp*2+state.kills*50+state.shrines*30;
-  state.score+=bonus;
-  spawnPetalBurst();
-  playSound('victory');
+  G.gameOver=true;
+  G.score += G.hp*2 + G.kills*50 + G.shrines*30;
+  const badges={bond:'🌸',relic:'⚱️',spirit:'🕯️'};
+  const titles={bond:'The Goddess Breathes Again',relic:'The Relics Reunited',spirit:'The Vigil Held True'};
+  document.getElementById('win-badge').textContent=badges[G.mode];
+  document.getElementById('win-title').textContent=titles[G.mode];
+  document.getElementById('win-score').textContent=G.score.toLocaleString();
+  document.getElementById('win-epi').innerHTML='<h3>✦ EPILOGUE — WHAT HAPPENED</h3>'+WIN_EPI;
+  document.getElementById('win-stats').innerHTML=[
+    mkS(G.kills,'Oni Vanquished','#ff8899'),
+    mkS(G.shrines,'Shrines Blessed','#aff0e0'),
+    mkS(G.soulsSaved,'Souls Saved','#f0c060'),
+    mkS(G.turn,'Turns Taken','#ffb7c5'),
+  ].join('');
+  hideHUD(); showScreen('win-screen'); spawnWinBurst(); playVictory();
+}
+function triggerLose() {
+  G.gameOver=true;
+  document.getElementById('lose-score').textContent=G.score.toLocaleString();
+  document.getElementById('lose-epi').innerHTML='<h3 style="color:#ff8899;">✦ WHAT WILL HAPPEN — IF NO ONE COMES</h3>'+LOSE_EPI;
+  hideHUD(); showScreen('lose-screen'); playSound('gameover');
+}
+function mkS(v,l,c){return `<div style="text-align:center"><div style="font-family:'Cinzel Decorative',serif;font-size:1.5rem;color:${c}">${v}</div><div style="font-family:'Cinzel Decorative',serif;font-size:0.5rem;color:rgba(201,147,58,0.4);letter-spacing:0.2em">${l}</div></div>`;}
+function hideHUD() {
+  document.getElementById('hud').classList.remove('active');
+  document.getElementById('hud-bottom').classList.remove('active');
+}
+function restart() { location.reload(); }
 
-  const badges={'bond':'🌸','relic':'⚱️','spirit':'🕯️'};
-  const titles={'bond':'The Goddess Breathes Again','relic':'The Relics Reunited','spirit':'The Vigil Held True'};
-  document.getElementById('win-badge').textContent=badges[state.gameMode];
-  document.getElementById('win-title').textContent=titles[state.gameMode];
-  document.getElementById('final-score').textContent=state.score.toLocaleString();
-  document.getElementById('win-epilogue').innerHTML=`<h3>✦ EPILOGUE — WHAT HAPPENED</h3>${WIN_EPILOGUE}`;
-  document.getElementById('win-stats-block').innerHTML=`
-    ${mkStat(state.kills,'Oni Vanquished','#ff9aaa')}
-    ${mkStat(state.shrines,'Shrines Blessed','var(--teal-light)')}
-    ${mkStat(state.soulsSaved,'Souls Saved','var(--gold-light)')}
-    ${mkStat(state.turn,'Turns Taken','var(--sakura)')}
-  `;
-  showScreen('win-screen');
+// ─── HUD ───
+function updateHUD() {
+  document.getElementById('hud-score').textContent = G.score;
+  document.getElementById('hud-turn').textContent  = `${G.turn}/${G.turnLimit}`;
+  document.getElementById('hud-kills').textContent = G.kills;
+  const pct = Math.max(0,(G.hp/G.maxHp)*100);
+  document.getElementById('hp-fill').style.width = pct+'%';
+  document.getElementById('hp-num').textContent = Math.max(0,G.hp);
+  const k = G.karma;
+  document.getElementById('karma-l').style.width = Math.max(0,k/100*50)+'%';
+  document.getElementById('karma-d').style.width = Math.max(0,-k/100*50)+'%';
+  document.getElementById('karma-label').textContent =
+    k>40?'Pure Light':k>10?'Light':k<-40?'Dark Soul':k<-10?'Shadow':'Neutral';
+}
+function renderObjectives() {
+  const el = document.getElementById('obj-list');
+  el.innerHTML='';
+  G.objectives.forEach(o=>{
+    const d=document.createElement('div');
+    d.className='obj-item'+(o.done?' done':'');
+    d.innerHTML=`<span class="obj-dot">${o.done?'✦':'○'}</span>${o.label}`;
+    el.appendChild(d);
+  });
+  let prog=0;
+  if (G.mode==='bond')   prog=(G.soulFragments/2)*100;
+  else if (G.mode==='relic') prog=(G.relicsFound/5)*100;
+  else prog=((G.turn-1)/G.turnLimit)*100;
+  prog=Math.min(100,prog);
+  document.getElementById('prog-fill').style.width=prog+'%';
+  document.getElementById('prog-pct').textContent=Math.round(prog)+'%';
 }
 
-function mkStat(val,label,color){
-  return `<div style="text-align:center"><div style="font-family:'Cinzel Decorative',serif;font-size:1.6rem;color:${color}">${val}</div><div style="font-family:'Cinzel Decorative',serif;font-size:0.55rem;color:rgba(201,147,58,0.4);letter-spacing:0.2em">${label}</div></div>`;
+// LOG
+const logFeed = document.getElementById('log-feed');
+function log(msg, cls='') {
+  const d=document.createElement('div');
+  d.className='log-item '+(cls||'');
+  d.innerHTML=msg;
+  logFeed.insertBefore(d, logFeed.firstChild);
+  setTimeout(()=>d.remove(), 4200);
+  while(logFeed.children.length>6) logFeed.removeChild(logFeed.lastChild);
 }
 
-function triggerGameOver() {
-  state.gameOver=true;
-  document.getElementById('gameover-score').textContent=state.score.toLocaleString();
-  document.getElementById('gameover-epilogue').innerHTML=`<h3 style="color:#ff9aaa;">✦ WHAT WILL HAPPEN — IF NO ONE COMES</h3>${GAMEOVER_WHAT_HAPPENS}`;
-  showScreen('gameover-screen');
-  playSound('gameover');
+// PETALS
+function spawnAmbientPetals() {
+  const layer = document.getElementById('petal-layer');
+  layer.innerHTML='';
+  '🌸🌺🍃✿❀🌸🌸'.split('').forEach((p)=>{
+    const el=document.createElement('div');
+    el.className='petal'; el.textContent=p;
+    el.style.cssText=`left:${Math.random()*100}%;animation-duration:${9+Math.random()*13}s;animation-delay:${Math.random()*10}s;font-size:${0.6+Math.random()*0.8}rem;`;
+    layer.appendChild(el);
+  });
+}
+function spawnWinBurst() {
+  const b=document.getElementById('win-burst'); b.innerHTML='';
+  for(let i=0;i<80;i++){
+    const p=document.createElement('div'); p.className='burst-petal';
+    p.textContent=['🌸','🌺','✿','❀','🌼'][~~(Math.random()*5)];
+    p.style.cssText=`left:${Math.random()*100}%;top:${-5+Math.random()*15}%;font-size:${0.8+Math.random()*1.2}rem;animation-duration:${2+Math.random()*4}s;animation-delay:${Math.random()*2}s;`;
+    b.appendChild(p);
+  }
 }
 
-function restart() { selClass=''; selMode=''; showScreen('intro-screen'); }
-
-// ============================
-// SOUND
-// ============================
-let ctx;
-function getCtx(){ if(!ctx) ctx=new(window.AudioContext||window.webkitAudioContext)(); return ctx; }
-function tone(f,t,d,v=0.12,delay=0){
+// ─── AUDIO ───
+let actx;
+function getCtx(){ if(!actx) actx=new(window.AudioContext||window.webkitAudioContext)(); return actx; }
+function playTone(f,t,d,v=0.12,dl=0){
   try{
     const c=getCtx(),o=c.createOscillator(),g=c.createGain();
-    o.connect(g); g.connect(c.destination);
-    o.type=t; o.frequency.value=f;
-    g.gain.setValueAtTime(0,c.currentTime+delay);
-    g.gain.linearRampToValueAtTime(v,c.currentTime+delay+0.01);
-    g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+delay+d);
-    o.start(c.currentTime+delay); o.stop(c.currentTime+delay+d+0.05);
+    o.connect(g);g.connect(c.destination);
+    o.type=t;o.frequency.value=f;
+    g.gain.setValueAtTime(0,c.currentTime+dl);
+    g.gain.linearRampToValueAtTime(v,c.currentTime+dl+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+dl+d);
+    o.start(c.currentTime+dl);o.stop(c.currentTime+dl+d+0.05);
   }catch(e){}
 }
+function playRollSound(){
+  // Ascending cascade of tones for dramatic roll
+  for(let i=0;i<10;i++) playTone(150+i*25,'triangle',0.07,0.08,i*0.06);
+}
+function playResultTone(roll) {
+  const freqs = { 1:[196,220], 2:[220,262], 3:[262,330], 4:[330,392], 5:[440,523,659], 6:[523,659,784,1047] };
+  (freqs[roll]||[440]).forEach((f,i) => playTone(f,'sine',0.3,0.12,i*0.1));
+}
+function playHeal(){[523,659,784,1046].forEach((f,i)=>playTone(f,'sine',0.25,0.09,i*0.08));}
 function playSound(s){
   switch(s){
-    case 'roll':    for(let i=0;i<8;i++) tone(180+i*40,'triangle',0.06,0.07,i*0.04); break;
-    case 'oni':     tone(60,'sawtooth',0.5,0.25); tone(80,'square',0.3,0.2,0.1); break;
-    case 'chest':   tone(392,'sine',0.2,0.1); tone(523,'sine',0.2,0.1,0.12); tone(659,'sine',0.3,0.1,0.24); break;
-    case 'shrine':  [392,494,587,784].forEach((f,i)=>tone(f,'sine',0.3,0.09,i*0.1)); break;
-    case 'scroll':  tone(523,'sine',0.25,0.1); tone(659,'sine',0.2,0.08,0.15); break;
-    case 'win':     tone(523,'sine',0.2,0.15); tone(659,'sine',0.15,0.12,0.1); tone(784,'sine',0.12,0.1,0.2); break;
-    case 'victory': [392,494,587,740,880,1047].forEach((f,i)=>tone(f,'sine',0.4,0.12,i*0.1)); break;
-    case 'hurt':    tone(100,'sawtooth',0.35,0.2); tone(80,'sawtooth',0.25,0.15,0.08); break;
-    case 'loot':    tone(784,'sine',0.15,0.1); tone(988,'sine',0.1,0.08,0.1); break;
-    case 'curse':   tone(55,'sawtooth',0.4,0.25); tone(65,'square',0.2,0.2,0.1); break;
-    case 'select':  tone(660,'sine',0.08,0.08); break;
-    case 'hint':    tone(440,'triangle',0.1,0.07); break;
-    case 'startup': [262,330,392,523,659].forEach((f,i)=>tone(f,'sine',0.25,0.1,i*0.09)); break;
-    case 'gameover':tone(196,'sawtooth',0.6,0.15); tone(146,'square',0.4,0.12,0.2); break;
+    case 'oni':     playTone(60,'sawtooth',0.5,0.22);playTone(80,'square',0.3,0.18,0.1);break;
+    case 'chest':   playTone(392,'sine',0.2,0.1);playTone(523,'sine',0.2,0.1,0.12);playTone(659,'sine',0.3,0.1,0.24);break;
+    case 'shrine':  [392,494,587,784].forEach((f,i)=>playTone(f,'sine',0.3,0.09,i*0.1));break;
+    case 'scroll':  playTone(523,'sine',0.25,0.1);playTone(659,'sine',0.2,0.08,0.15);break;
+    case 'portal':  playTone(330,'sine',0.3,0.15);playTone(440,'sine',0.2,0.1,0.15);break;
+    case 'curse':   playTone(55,'sawtooth',0.4,0.25);playTone(65,'square',0.2,0.2,0.1);break;
+    case 'win':     playTone(523,'sine',0.2,0.15);playTone(659,'sine',0.15,0.12,0.1);playTone(784,'sine',0.12,0.1,0.2);break;
+    case 'hurt':    playTone(100,'sawtooth',0.35,0.2);playTone(80,'sawtooth',0.25,0.15,0.08);break;
+    case 'loot':    playTone(784,'sine',0.15,0.1);playTone(988,'sine',0.1,0.08,0.1);break;
+    case 'heal':    playHeal();break;
+    case 'gameover':playTone(196,'sawtooth',0.6,0.15);playTone(146,'square',0.4,0.12,0.2);break;
   }
 }
+function playStartup(){[262,330,392,523,659,784].forEach((f,i)=>playTone(f,'sine',0.3,0.1,i*0.09));}
+function playVictory(){[392,494,587,740,880,1047].forEach((f,i)=>playTone(f,'sine',0.4,0.12,i*0.1));}
 
-// ============================
-// PETALS AMBIENT
-// ============================
-function spawnAmbientPetals(){
-  const layer=document.getElementById('petal-layer');
-  const petals=['🌸','🌺','🍃','✿','❀'];
-  for(let i=0;i<20;i++){
-    const p=document.createElement('div');
-    p.className='petal';
-    p.textContent=petals[Math.floor(Math.random()*petals.length)];
-    p.style.cssText=`left:${Math.random()*100}%;animation-duration:${8+Math.random()*12}s;animation-delay:${Math.random()*10}s;font-size:${0.6+Math.random()*0.8}rem;`;
-    layer.appendChild(p);
-  }
-}
-
-function spawnPetalBurst(){
-  const burst=document.getElementById('petal-burst');
-  burst.innerHTML='';
-  const colors=['#ffb7c5','#e8556a','#c9933a','#f0c060','#d7aef5'];
-  for(let i=0;i<60;i++){
-    const p=document.createElement('div');
-    p.className='burst-petal';
-    p.textContent=['🌸','🌺','✿','❀','🌼'][Math.floor(Math.random()*5)];
-    p.style.cssText=`left:${Math.random()*100}%;top:${-10+Math.random()*20}%;font-size:${0.8+Math.random()*1.2}rem;animation:burstFall ${2+Math.random()*4}s ${Math.random()*2}s linear forwards;`;
-    burst.appendChild(p);
-  }
-}
-
-// INIT
-spawnAmbientPetals();
+// Init G with a dummy position so tooltips don't error before game starts
+G = { position: -1 };
 </script>
 </body>
 </html>
