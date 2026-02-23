@@ -397,6 +397,167 @@ input::placeholder{color:rgba(201,147,58,0.3);}
 .burst-petal{position:absolute;animation:bFall linear forwards;}
 @keyframes bFall{0%{opacity:1;transform:translateY(0) rotate(0deg);}100%{opacity:0;transform:translateY(90vh) rotate(540deg);}}
 
+/* ═══════════════════════════════════
+   BLACK HOLE SEQUENCE
+═══════════════════════════════════ */
+#blackhole-cinema{
+  position:fixed;inset:0;z-index:110;
+  display:none;align-items:center;justify-content:center;
+  flex-direction:column;
+  pointer-events:none;
+  background:rgba(0,0,0,0);
+  transition:background 0.5s;
+}
+#blackhole-cinema.active{display:flex;background:rgba(0,0,0,0.95);}
+
+/* Spinning black hole visual */
+#bh-ring-outer{
+  position:absolute;width:420px;height:420px;border-radius:50%;
+  border:3px solid rgba(155,89,182,0.0);
+  opacity:0;transition:opacity 0.6s;
+}
+#bh-ring-outer.show{
+  opacity:1;
+  animation:bhSpin 3s linear infinite;
+  border-color:rgba(155,89,182,0.5);
+  box-shadow:0 0 60px rgba(155,89,182,0.3),0 0 120px rgba(155,89,182,0.1);
+}
+#bh-ring-mid{
+  position:absolute;width:300px;height:300px;border-radius:50%;
+  border:4px solid rgba(255,183,197,0.0);
+  opacity:0;transition:opacity 0.6s 0.2s;
+}
+#bh-ring-mid.show{
+  opacity:1;
+  animation:bhSpin 2s linear infinite reverse;
+  border-color:rgba(255,183,197,0.4);
+  box-shadow:0 0 40px rgba(255,183,197,0.25);
+}
+#bh-ring-inner{
+  position:absolute;width:180px;height:180px;border-radius:50%;
+  border:5px solid rgba(240,192,96,0.0);
+  opacity:0;transition:opacity 0.6s 0.4s;
+}
+#bh-ring-inner.show{
+  opacity:1;
+  animation:bhSpin 1.2s linear infinite;
+  border-color:rgba(240,192,96,0.6);
+  box-shadow:0 0 30px rgba(240,192,96,0.4);
+}
+@keyframes bhSpin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+
+/* Black hole core — the actual singularity */
+#bh-core{
+  position:absolute;width:80px;height:80px;border-radius:50%;
+  background:radial-gradient(ellipse at center,#000 0%,#0d0508 60%,rgba(155,89,182,0.4) 100%);
+  box-shadow:0 0 40px rgba(0,0,0,1),0 0 80px rgba(155,89,182,0.5);
+  opacity:0;transition:opacity 0.4s 0.3s;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.4rem;
+}
+#bh-core.show{opacity:1;animation:bhPulse 1.5s ease-in-out infinite;}
+@keyframes bhPulse{
+  0%,100%{transform:scale(1);box-shadow:0 0 40px rgba(0,0,0,1),0 0 80px rgba(155,89,182,0.5);}
+  50%{transform:scale(1.15);box-shadow:0 0 60px rgba(0,0,0,1),0 0 120px rgba(155,89,182,0.7);}
+}
+
+/* Gravity particles that spiral into the black hole */
+.grav-particle{
+  position:absolute;width:6px;height:6px;border-radius:50%;
+  animation:gravSpiral linear forwards;
+  pointer-events:none;
+}
+@keyframes gravSpiral{
+  0%{opacity:1;transform:translate(var(--gx),var(--gy)) scale(1);}
+  80%{opacity:0.6;transform:translate(calc(var(--gx)*0.1),calc(var(--gy)*0.1)) scale(0.5) rotate(720deg);}
+  100%{opacity:0;transform:translate(0,0) scale(0);}
+}
+
+/* Spaghettification — player being stretched into hole */
+#bh-player-stretch{
+  position:absolute;font-size:2.5rem;
+  opacity:0;
+  transition:opacity 0.3s;
+}
+#bh-player-stretch.show{
+  opacity:1;
+  animation:spaghettify 1.2s ease-in forwards;
+}
+@keyframes spaghettify{
+  0%{transform:scale(1,1) translateY(0);opacity:1;}
+  40%{transform:scale(0.4,2.5) translateY(-20px);opacity:0.8;}
+  70%{transform:scale(0.1,4) translateY(-40px);opacity:0.4;}
+  100%{transform:scale(0,0) translateY(0);opacity:0;}
+}
+
+/* Void travel text */
+#bh-void-text{
+  position:absolute;bottom:100px;
+  font-family:'Cinzel Decorative',serif;font-size:1rem;letter-spacing:0.3em;
+  color:rgba(155,89,182,0.0);text-align:center;
+  text-shadow:0 0 20px rgba(155,89,182,0.8);
+  transition:color 0.5s,opacity 0.5s;
+  pointer-events:none;
+}
+#bh-void-text.show{color:rgba(155,89,182,0.9);}
+
+/* Emergence flash when exiting black hole */
+#bh-emerge-flash{
+  position:fixed;inset:0;z-index:111;pointer-events:none;
+  background:radial-gradient(ellipse at center,rgba(155,89,182,0.9),rgba(255,183,197,0.6),transparent 70%);
+  opacity:0;
+}
+#bh-emerge-flash.show{animation:emergeBlast 1s ease-out forwards;}
+@keyframes emergeBlast{0%{opacity:1;}100%{opacity:0;}}
+
+/* Distortion lines around black hole */
+.bh-distort{
+  position:absolute;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(155,89,182,0.6),transparent);
+  animation:distortLine linear infinite;
+  pointer-events:none;
+}
+@keyframes distortLine{
+  0%{opacity:0;transform:translateY(var(--dy)) scaleX(0);}
+  50%{opacity:0.8;transform:translateY(var(--dy)) scaleX(1);}
+  100%{opacity:0;transform:translateY(var(--dy)) scaleX(0);}
+}
+
+/* Black hole HUD button */
+#bh-btn-wrap{
+  position:fixed;bottom:220px;left:50%;transform:translateX(-50%);
+  z-index:31;display:none;pointer-events:auto;
+  flex-direction:column;align-items:center;gap:8px;
+}
+#bh-btn-wrap.show{display:flex;}
+.bh-pulse-btn{
+  font-family:'Cinzel Decorative',serif;font-size:0.7rem;letter-spacing:0.25em;
+  padding:14px 28px;
+  background:radial-gradient(ellipse at center,rgba(155,89,182,0.15),rgba(0,0,0,0.8));
+  border:2px solid rgba(155,89,182,0.6);
+  color:var(--spirit2);cursor:pointer;border-radius:40px;
+  box-shadow:0 0 20px rgba(155,89,182,0.3),inset 0 0 20px rgba(155,89,182,0.05);
+  animation:bhBtnPulse 2s ease-in-out infinite;
+  position:relative;overflow:hidden;
+}
+.bh-pulse-btn::before{
+  content:'';position:absolute;inset:0;border-radius:40px;
+  background:conic-gradient(from 0deg,transparent,rgba(155,89,182,0.15),transparent);
+  animation:bhSpin 3s linear infinite;
+}
+@keyframes bhBtnPulse{
+  0%,100%{box-shadow:0 0 20px rgba(155,89,182,0.3),inset 0 0 20px rgba(155,89,182,0.05);}
+  50%{box-shadow:0 0 40px rgba(155,89,182,0.6),inset 0 0 30px rgba(155,89,182,0.1);}
+}
+.bh-uses-label{
+  font-family:'Cinzel Decorative',serif;font-size:0.5rem;letter-spacing:0.3em;
+  color:rgba(155,89,182,0.4);
+}
+.bh-warning{
+  font-family:'Cinzel Decorative',serif;font-size:0.55rem;letter-spacing:0.2em;
+  color:rgba(255,68,102,0.5);max-width:280px;text-align:center;line-height:1.6;
+}
+
 /* NODE TOOLTIP */
 #node-tooltip{position:fixed;z-index:35;background:rgba(13,5,8,0.9);border:1px solid rgba(201,147,58,0.3);border-radius:5px;padding:8px 12px;font-size:0.72rem;color:var(--gold2);pointer-events:none;display:none;font-family:'Cinzel Decorative',serif;letter-spacing:0.1em;backdrop-filter:blur(6px);}
 
@@ -416,6 +577,24 @@ input::placeholder{color:rgba(201,147,58,0.3);}
 <div id="heal-flash"></div>
 <!-- TOOLTIP -->
 <div id="node-tooltip"></div>
+
+<!-- BLACK HOLE CINEMA -->
+<div id="bh-emerge-flash"></div>
+<div id="blackhole-cinema">
+  <div id="bh-ring-outer"></div>
+  <div id="bh-ring-mid"></div>
+  <div id="bh-ring-inner"></div>
+  <div id="bh-core">🕳️</div>
+  <div id="bh-player-stretch"></div>
+  <div id="bh-void-text">TRAVERSING THE VOID...</div>
+</div>
+
+<!-- BLACK HOLE BUTTON shown when at exit without mission complete -->
+<div id="bh-btn-wrap">
+  <button class="bh-pulse-btn" onclick="enterBlackHole()">🕳️ ENTER THE BLACK HOLE 🕳️</button>
+  <div class="bh-uses-label">▸ VOID TRAVERSAL — <span id="bh-uses-left">2</span> USES REMAINING ◂</div>
+  <div class="bh-warning" id="bh-warning-text">Mission incomplete. The void tears open beside you — enter to be flung to a new realm with bonus turns to complete your quest.</div>
+</div>
 <!-- THREE.JS CANVAS -->
 <canvas id="three-canvas"></canvas>
 <!-- PETAL RAIN -->
@@ -981,6 +1160,9 @@ function startGame() {
     soulFragments: 0, relicsFound: 0,
     meditating: 0,
     gameOver: false, rolling: false, pending: false,
+    blackHoleUses: 2,         // max times player can use black hole
+    blackHoleUsed: 0,         // times used so far
+    blackHoleBonusTurns: 0,   // bonus turns granted by black holes
   };
 
   Object.keys(RECOVERY).forEach(k => {
@@ -1293,6 +1475,7 @@ function healFlash() {
 
 // ─── MOVE ───
 function doMove(roll) {
+  hideBlackHoleOption(); // hide BH button on new move
   if (G.cls === 'ryuujin' && roll < 3) {
     G.hp = Math.min(G.maxHp, G.hp + 5);
     log('🐉 Dragon vitality: +5 HP from slow movement.', 'li-heal');
@@ -1334,7 +1517,9 @@ function triggerNode(pos) {
   if (t === 'start') { G.pending = false; return; }
   if (t === 'exit') {
     if (checkWin()) { triggerWin(); return; }
-    log('🌸 Soul Gate found — mission incomplete.', 'li-spirit');
+    // Mission incomplete at exit — offer black hole escape
+    log('🌸 Soul Gate found — mission still incomplete.', 'li-spirit');
+    showBlackHoleOption();
     G.pending = false; return;
   }
   if (G.purifyNext && (t === 'curse' || t === 'oni')) {
@@ -1432,6 +1617,307 @@ function showHealNode() {
     [{label:'💊 Drink from the Spring', cls:'btn-teal', act:'heal-node'}]
   );
 }
+// ═══════════════════════════════════════════════════════
+//  BLACK HOLE SYSTEM
+// ═══════════════════════════════════════════════════════
+
+// Show the pulsing black hole button when player is at exit without completing
+function showBlackHoleOption() {
+  const wrap = document.getElementById('bh-btn-wrap');
+  const usesLeft = document.getElementById('bh-uses-left');
+  const warning = document.getElementById('bh-warning-text');
+  usesLeft.textContent = G.blackHoleUses - G.blackHoleUsed;
+
+  if (G.blackHoleUsed >= G.blackHoleUses) {
+    // No uses left — show a different message
+    warning.textContent = '⚠ The void is exhausted — no more black holes remain. This realm is sealed.';
+    wrap.classList.add('show');
+    document.querySelector('.bh-pulse-btn').disabled = true;
+    document.querySelector('.bh-pulse-btn').style.opacity = '0.35';
+    document.querySelector('.bh-pulse-btn').style.cursor = 'not-allowed';
+  } else {
+    // Lore message depends on mode and uses left
+    const msgs = {
+      bond: 'You reached the Soul Gate, but her fragments are still lost. The void swirls — enter to be hurled across the spirit realm with extra time to find them.',
+      relic: 'The relics are still scattered. A black hole tears open beside the gate — step through to continue your hunt in a new region with bonus turns.',
+      spirit: 'The vigil burns still. The black hole will carry your light to a new corner of the realm. Your turns extend — the kingdom depends on you.'
+    };
+    warning.textContent = msgs[G.mode] || 'Mission incomplete. Enter the void to continue.';
+    document.querySelector('.bh-pulse-btn').disabled = false;
+    document.querySelector('.bh-pulse-btn').style.opacity = '1';
+    document.querySelector('.bh-pulse-btn').style.cursor = 'pointer';
+    wrap.classList.add('show');
+  }
+  // Spawn small black hole node effect on the exit node
+  spawnBlackHoleNode3D();
+}
+
+function hideBlackHoleOption() {
+  document.getElementById('bh-btn-wrap').classList.remove('show');
+}
+
+// Spawn a visual black hole spiral on the 3D exit node
+function spawnBlackHoleNode3D() {
+  const exitNode = NODES[24];
+  if (!exitNode) return;
+  // Flash the exit node with purple
+  if (exitNode.obj && exitNode.obj._ring) {
+    exitNode.obj._ring.color.setHex(0x9b59b6);
+    exitNode.obj._ring.opacity = 1.0;
+  }
+}
+
+// Main black hole entry — the full cinematic sequence
+function enterBlackHole() {
+  if (G.blackHoleUsed >= G.blackHoleUses || G.gameOver) return;
+  hideBlackHoleOption();
+  G.blackHoleUsed++;
+  G.pending = true;
+
+  const cinema = document.getElementById('blackhole-cinema');
+  const ringOuter = document.getElementById('bh-ring-outer');
+  const ringMid   = document.getElementById('bh-ring-mid');
+  const ringInner = document.getElementById('bh-ring-inner');
+  const core      = document.getElementById('bh-core');
+  const stretch   = document.getElementById('bh-player-stretch');
+  const voidText  = document.getElementById('bh-void-text');
+  const cls = CLASSES[G.cls];
+
+  // Reset
+  [ringOuter, ringMid, ringInner, core, stretch, voidText].forEach(el => el.classList.remove('show'));
+  cinema.classList.remove('active');
+
+  // Phase 1 — black hole opens (0.0s)
+  playBlackHoleSound('open');
+  cinema.classList.add('active');
+  setTimeout(() => {
+    ringOuter.classList.add('show');
+    spawnGravityParticles();
+    spawnDistortionLines();
+  }, 100);
+
+  // Phase 2 — rings pulse in (0.4s)
+  setTimeout(() => {
+    ringMid.classList.add('show');
+  }, 400);
+  setTimeout(() => {
+    ringInner.classList.add('show');
+    core.classList.add('show');
+  }, 700);
+
+  // Phase 3 — player stretches in (1.2s)
+  setTimeout(() => {
+    stretch.textContent = cls.icon;
+    stretch.classList.add('show');
+    voidText.classList.add('show');
+    voidText.textContent = 'ENTERING THE VOID...';
+    playBlackHoleSound('pull');
+    log('🕳️ You leap into the black hole. Reality bends around you.', 'li-spirit');
+  }, 1200);
+
+  // Phase 4 — void travel text cycles (2.0s)
+  const voidPhrases = [
+    'TRAVERSING THE VOID...',
+    'SPACE BENDS AROUND YOU...',
+    'TIME DISSOLVES...',
+    'THE GODDESS WATCHES...',
+    'A NEW PATH EMERGES...'
+  ];
+  let phraseIdx = 0;
+  const phraseInterval = setInterval(() => {
+    phraseIdx++;
+    if (phraseIdx < voidPhrases.length) {
+      voidText.style.opacity = '0';
+      setTimeout(() => {
+        voidText.textContent = voidPhrases[phraseIdx];
+        voidText.style.opacity = '1';
+      }, 300);
+    }
+  }, 600);
+
+  // Phase 5 — select destination and emerge (4.5s)
+  setTimeout(() => {
+    clearInterval(phraseInterval);
+    voidText.textContent = 'DESTINATION FOUND...';
+    playBlackHoleSound('emerge');
+  }, 4000);
+
+  setTimeout(() => {
+    // Calculate strategic landing zone
+    const destination = pickBlackHoleDestination();
+    const bonusTurns = 6 + Math.floor(Math.random() * 4); // +6 to +9 bonus turns
+
+    // Close cinema
+    cinema.classList.remove('active');
+    [ringOuter, ringMid, ringInner, core, stretch, voidText].forEach(el => el.classList.remove('show'));
+
+    // Emergence flash
+    const flash = document.getElementById('bh-emerge-flash');
+    flash.classList.remove('show'); void flash.offsetWidth;
+    flash.classList.add('show');
+
+    // Teleport player
+    G.position = destination.idx;
+    G.turnLimit += bonusTurns;
+    G.blackHoleBonusTurns += bonusTurns;
+    NODES[destination.idx].visited = true;
+    moveCameraTo(NODES[destination.idx]);
+
+    // Update HUD
+    updateHUD(); updateLifeButtons();
+
+    // Big announcement
+    setTimeout(() => {
+      G.pending = false;
+      openModal(
+        'VOID EMERGENCE',
+        '虚空からの出現',
+        '🌀',
+        `The black hole spat you out at the <strong>${destination.type.toUpperCase()}</strong> of the spirit realm — ${destination.desc}. The void has granted you <strong>+${bonusTurns} bonus turns</strong> to complete your mission. The kingdom still stands. Roll on.`,
+        `Black hole uses remaining: ${G.blackHoleUses - G.blackHoleUsed}. Strategic landing zones are chosen to maximise your mission chances. Turns extended to ${G.turnLimit}.`,
+        [{label:'⚡ Continue the Quest', cls:'btn-spirit', act:'bh-emerge', pts: 0, bonusTurns}]
+      );
+      log(`🕳️ Black hole exit! +${bonusTurns} bonus turns. Now at node ${destination.idx}. ${G.blackHoleUses - G.blackHoleUsed} void uses left.`, 'li-special');
+    }, 400);
+
+  }, 4600);
+}
+
+// Pick a strategic destination based on mission type and what's still needed
+function pickBlackHoleDestination() {
+  const modeStrategic = {
+    bond: ['oni', 'oni', 'chest', 'shrine', 'scroll'],   // need kills for fragments
+    relic: ['relic', 'relic', 'chest', 'chest', 'shrine'], // need relics
+    spirit: ['shrine', 'heal', 'scroll', 'chest', 'normal'] // need to survive
+  };
+  const preferred = modeStrategic[G.mode] || modeStrategic.spirit;
+
+  // Find unvisited nodes matching preferred types, avoiding current position
+  let candidates = NODES.filter((n, i) => {
+    if (i === G.position) return false;
+    if (i === 0 || i === 24) return false; // not start or exit
+    if (n.cleared) return false; // skip already cleared
+    return preferred.includes(n.type);
+  });
+
+  // Fallback: any unvisited non-start/exit node
+  if (candidates.length === 0) {
+    candidates = NODES.filter((n, i) => i !== G.position && i !== 0 && i !== 24 && !n.cleared);
+  }
+  // Final fallback
+  if (candidates.length === 0) {
+    candidates = NODES.filter((n, i) => i !== G.position && i !== 0);
+  }
+
+  // Pick the one closest to middle of the board (most strategic)
+  const chosen = candidates[Math.floor(Math.random() * Math.min(candidates.length, 4))];
+
+  const destDescs = {
+    oni: 'where an Oni awaits — defeat it to progress your mission',
+    relic: 'where a sacred relic lies unclaimed',
+    chest: 'where treasure chests hold the tools you need',
+    shrine: 'beside a healing shrine to restore your strength',
+    scroll: 'near ancient scrolls holding the Goddess\'s words',
+    heal: 'at a sacred spring that will restore your life force',
+    normal: 'in a region of the spirit realm rich with wandering souls'
+  };
+
+  return {
+    idx: chosen.id,
+    type: chosen.type,
+    desc: destDescs[chosen.type] || 'in an uncharted corner of the spirit realm'
+  };
+}
+
+// Gravity particle burst into the black hole
+function spawnGravityParticles() {
+  const cinema = document.getElementById('blackhole-cinema');
+  const colors = ['#9b59b6','#ffb7c5','#f0c060','#d7aef5','#aff0e0'];
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div');
+    p.className = 'grav-particle';
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 120 + Math.random() * 160;
+    p.style.setProperty('--gx', (Math.cos(angle)*dist)+'px');
+    p.style.setProperty('--gy', (Math.sin(angle)*dist)+'px');
+    p.style.left = '50%'; p.style.top = '50%';
+    p.style.marginLeft = '-3px'; p.style.marginTop = '-3px';
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+    p.style.animationDelay = (Math.random() * 0.8) + 's';
+    cinema.appendChild(p);
+    setTimeout(() => p.remove(), 3500);
+  }
+}
+
+// Distortion lines that appear around the black hole
+function spawnDistortionLines() {
+  const cinema = document.getElementById('blackhole-cinema');
+  for (let i = 0; i < 8; i++) {
+    const line = document.createElement('div');
+    line.className = 'bh-distort';
+    const dy = (Math.random() - 0.5) * 300;
+    line.style.setProperty('--dy', dy+'px');
+    line.style.width = (150 + Math.random()*250)+'px';
+    line.style.left = '50%';
+    line.style.top = '50%';
+    line.style.marginLeft = '-'+(75+Math.random()*125)+'px';
+    line.style.animationDuration = (0.8 + Math.random()*1.2)+'s';
+    line.style.animationDelay = (Math.random()*1)+'s';
+    cinema.appendChild(line);
+    setTimeout(() => line.remove(), 4000);
+  }
+}
+
+// Black hole audio
+function playBlackHoleSound(phase) {
+  try {
+    const c = getCtx();
+    if (phase === 'open') {
+      // Deep rumble + rising whine
+      const osc1 = c.createOscillator();
+      const gain1 = c.createGain();
+      osc1.connect(gain1); gain1.connect(c.destination);
+      osc1.type = 'sawtooth';
+      osc1.frequency.setValueAtTime(40, c.currentTime);
+      osc1.frequency.exponentialRampToValueAtTime(20, c.currentTime + 2);
+      gain1.gain.setValueAtTime(0, c.currentTime);
+      gain1.gain.linearRampToValueAtTime(0.3, c.currentTime + 0.3);
+      gain1.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 2.5);
+      osc1.start(c.currentTime); osc1.stop(c.currentTime + 2.6);
+
+      // High whine rising
+      const osc2 = c.createOscillator();
+      const gain2 = c.createGain();
+      osc2.connect(gain2); gain2.connect(c.destination);
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(200, c.currentTime + 0.5);
+      osc2.frequency.exponentialRampToValueAtTime(800, c.currentTime + 2.5);
+      gain2.gain.setValueAtTime(0, c.currentTime + 0.5);
+      gain2.gain.linearRampToValueAtTime(0.15, c.currentTime + 1);
+      gain2.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 2.8);
+      osc2.start(c.currentTime + 0.5); osc2.stop(c.currentTime + 3);
+    }
+    if (phase === 'pull') {
+      // Swooshing pull sound
+      const osc = c.createOscillator();
+      const gain = c.createGain();
+      osc.connect(gain); gain.connect(c.destination);
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(600, c.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(50, c.currentTime + 1.5);
+      gain.gain.setValueAtTime(0.2, c.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 1.6);
+      osc.start(c.currentTime); osc.stop(c.currentTime + 1.7);
+    }
+    if (phase === 'emerge') {
+      // Dramatic burst on exit
+      [196, 262, 330, 392, 523, 659, 784].forEach((f, i) =>
+        playTone(f, 'sine', 0.5, 0.14, i * 0.07));
+    }
+  } catch(e) {}
+}
+
 function showNormal() {
   const normals = [
     {n:'Drifting Soul',jp:'漂う魂',art:'👻',d:'A transparent figure drifts past — untethered since the Night of Fallen Petals. Its eyes hold a question it has forgotten how to ask.',h:'Lost souls sometimes leave items. Search the area.'},
@@ -1578,6 +2064,12 @@ function resolve(a) {
       log('💊 Sacred Spring! +30 HP! +30 pts.', 'li-heal');
       healFlash(); playSound('heal'); break;
     }
+    case 'bh-emerge': {
+      // Player emerged from black hole — trigger the node they landed on
+      log('⚡ You crash back into the spirit realm. The quest continues!', 'li-spirit');
+      setTimeout(() => triggerNode(G.position), 500);
+      return; // skip the updateHUD at end since triggerNode handles it
+    }
     case 'gameover': triggerLose(); return;
   }
   updateHUD(); updateLifeButtons(); renderObjectives(); buildActionBtns();
@@ -1646,6 +2138,7 @@ function triggerWin() {
     mkS(G.shrines,'Shrines Blessed','#aff0e0'),
     mkS(G.soulsSaved,'Souls Saved','#f0c060'),
     mkS(G.turn,'Turns Taken','#ffb7c5'),
+    G.blackHoleUsed > 0 ? mkS(G.blackHoleUsed,'Void Crossings','#d7aef5') : '',
   ].join('');
   hideHUD(); showScreen('win-screen'); spawnWinBurst(); playVictory();
 }
@@ -1659,6 +2152,7 @@ function mkS(v,l,c){return `<div style="text-align:center"><div style="font-fami
 function hideHUD() {
   document.getElementById('hud').classList.remove('active');
   document.getElementById('hud-bottom').classList.remove('active');
+  hideBlackHoleOption();
 }
 function restart() { location.reload(); }
 
@@ -1767,8 +2261,8 @@ function playSound(s){
 function playStartup(){[262,330,392,523,659,784].forEach((f,i)=>playTone(f,'sine',0.3,0.1,i*0.09));}
 function playVictory(){[392,494,587,740,880,1047].forEach((f,i)=>playTone(f,'sine',0.4,0.12,i*0.1));}
 
-// Init G with a dummy position so tooltips don't error before game starts
-G = { position: -1 };
+// Init G with dummy values so tooltips/buttons don't error before game starts
+G = { position: -1, blackHoleUses: 2, blackHoleUsed: 0 };
 </script>
 </body>
 </html>
